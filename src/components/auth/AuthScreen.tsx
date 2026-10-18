@@ -102,7 +102,7 @@ function HeroCopy({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
       <motion.div variants={rise} custom={4} className="mt-9 flex flex-wrap gap-3">
         <button onClick={() => setMode("signin")} aria-pressed={mode === "signin"}
           className={`${btn.primary} min-h-12 w-full px-7 text-base sm:w-auto ${mode === "signin" ? "ring-4 ring-brand-200" : ""}`}>
-          Try a sample account <ArrowRight className="h-4 w-4" />
+          Log in <ArrowRight className="h-4 w-4" />
         </button>
         <button onClick={() => setMode("register")} aria-pressed={mode === "register"}
           className={`${btn.secondary} min-h-12 w-full px-7 text-base sm:w-auto ${mode === "register" ? "border-brand-600 bg-brand-50" : ""}`}>

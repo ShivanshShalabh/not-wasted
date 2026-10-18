@@ -350,7 +350,7 @@ export function LandingStory({ onStart, onRegister }: { onStart: () => void; onR
           <h2 className="relative font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Your next event ends at some point.<br /><span className="text-brand-200">Let&apos;s plan what happens after.</span></h2>
           <div className="relative mt-10 flex flex-wrap justify-center gap-3">
             <button onClick={onStart} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-semibold text-brand-900 shadow-lift transition hover:-translate-y-0.5 hover:bg-brand-50">
-              Try a sample account <ArrowRight className="h-4 w-4" />
+              Log in <ArrowRight className="h-4 w-4" />
             </button>
             <button onClick={onRegister} className="inline-flex min-h-12 items-center gap-2 rounded-full border-[1.5px] border-white/60 px-7 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:border-white hover:bg-white/10">
               Register your organization
