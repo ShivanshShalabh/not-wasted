@@ -1,4 +1,5 @@
 import { CATEGORIES, CATEGORY_LIST } from "../categories";
+import { deductionFor } from "../impact";
 import type { Category, DemoState } from "../types";
 import { step, type AgentStep } from "./trace";
 
@@ -36,7 +37,7 @@ export function weeklyStats(state: DemoState, now: number) {
     d.units += c.qty;
     d.lbs += c.qty * cfg.lbsPerUnit;
     d.co2eKg += c.qty * cfg.lbsPerUnit * cfg.co2ePerLb;
-    d.deduction += c.qty * cfg.valuePerUnit * (b.category === "food" ? 1.5 : 1);
+    d.deduction += deductionFor(b.category, c.qty).deduction;
     if (r && !d.recipients.includes(r.name)) d.recipients.push(r.name);
     donors.set(b.institution, d);
   }
@@ -65,4 +66,28 @@ The Not Wasted network`;
 export function localSummary(t: { units: number; lbs: number; co2eKg: number; recipients: number }, donors: DonorWeek[]) {
   const top = [...donors].sort((a, b) => b.units - a.units)[0];
   return `This week the network rescued ${t.units.toLocaleString()} units (${t.lbs.toLocaleString()} lbs, ~${t.co2eKg.toLocaleString()} kg CO2e avoided) for ${t.recipients} community organizations.${top ? ` ${top.institution} led with ${top.units} units.` : ""} Next week: register recurring events early so food banks can plan cold storage.`;
+}
+
+/** The weekly report as Markdown, so the Network impact page can render it. */
+export function reportMarkdown(r: { weekOf: string; summary: string; totals: { units: number; lbs: number; co2eKg: number; recipients: number }; donors: DonorWeek[] }) {
+  const rows = r.donors.map((d) => `| ${d.institution} | ${d.units} | ${d.lbs.toLocaleString()} | ${d.co2eKg.toLocaleString()} | $${d.deduction.toLocaleString()} | ${d.recipients.join(", ")} |`);
+  return `# Weekly impact report
+
+_Week of ${r.weekOf} · written by the Weekly impact report agent_
+
+${r.summary}
+
+## This week at a glance
+- **Units rescued:** ${r.totals.units.toLocaleString()}
+- **Pounds diverted from landfill:** ${r.totals.lbs.toLocaleString()}
+- **Emissions avoided:** ~${r.totals.co2eKg.toLocaleString()} kg CO2e
+- **Community organizations served:** ${r.totals.recipients}
+
+## By donor
+| Donor | Units | Lbs | kg CO2e | Est. deduction | Received by |
+|---|---:|---:|---:|---:|---|
+${rows.join("\n") || "| — | 0 | 0 | 0 | $0 | — |"}
+
+_Weights, emissions and deduction values are estimates, not tax advice._
+`;
 }

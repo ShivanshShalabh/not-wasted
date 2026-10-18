@@ -1,5 +1,5 @@
 import { CATEGORIES } from "./categories";
-import type { Account, AreaNeed, Batch, Category, Claim, DemoState, DonorEvent, RecipientOrg, View, WaitlistEntry } from "./types";
+import type { Account, AreaNeed, Batch, Category, Claim, ImpactReport, DemoState, DonorEvent, RecipientOrg, View, WaitlistEntry } from "./types";
 
 export type Action =
   | { type: "HYDRATE"; state: DemoState }
@@ -17,6 +17,7 @@ export type Action =
   | { type: "SET_REQUIREMENTS"; recipientId: string; requirements: string }
   | { type: "SET_AREA"; areas: Record<string, AreaNeed> }
   /** Recipient edits how much it can take right now, per accepted category. */
+  | { type: "SAVE_REPORT"; report: ImpactReport }
   | { type: "SET_CAPACITY"; recipientId: string; capacity: Partial<Record<Category, number>> }
   /** Recipient changes the quantity of its own open claim (0 cancels it). */
   | { type: "UPDATE_CLAIM"; claimId: string; qty: number; now: number }
@@ -304,6 +305,8 @@ export function reducer(state: DemoState, action: Action): DemoState {
       return { ...state, recipients: [...state.recipients, action.recipient], lastNotice: `${action.recipient.name} added to network` };
     case "SET_AREA":
       return { ...state, recipients: state.recipients.map((r) => (action.areas[r.id] ? { ...r, area: action.areas[r.id] } : r)) };
+    case "SAVE_REPORT":
+      return { ...state, latestReport: action.report };
     case "SET_CAPACITY":
       return apply(state, setCapacity(state, action.recipientId, action.capacity), "Capacity updated — matching uses the new numbers");
     case "UPDATE_CLAIM": {

@@ -108,13 +108,14 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
 }
 
 /** Number that springs to its new value — used for live remaining counts and KPIs. */
-export function AnimatedNumber({ value, format = (n: number) => Math.round(n).toLocaleString() }: { value: number; format?: (n: number) => string }) {
-  const mv = useMotionValue(value);
+export function AnimatedNumber({ value, from, duration = 0.6, format = (n: number) => Math.round(n).toLocaleString() }: { value: number; from?: number; duration?: number; format?: (n: number) => string }) {
+  // `from` makes the number count up on first render (e.g. headline stats on page load).
+  const mv = useMotionValue(from ?? value);
   const text = useTransform(mv, format);
   useEffect(() => {
-    const c = animate(mv, value, { duration: 0.6, ease: "easeOut" });
+    const c = animate(mv, value, { duration, ease: "easeOut" });
     return c.stop;
-  }, [mv, value]);
+  }, [mv, value, duration]);
   return <motion.span>{text}</motion.span>;
 }
 

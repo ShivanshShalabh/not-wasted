@@ -6,7 +6,7 @@ Every call goes through the server (`src/lib/public-data/`). Responses are cache
 
 | Dataset | Publisher | What we use it for | Where in the app | Key? |
 |---|---|---|---|---|
-| [Excess Food Opportunities Map](https://www.epa.gov/sustainable-management-food/excess-food-opportunities-map) | U.S. EPA | Real Nashville food banks, pantries and soup kitchens; schools and universities with estimated excess food (tons/year) | Network impact → Public data; Outreach agent prospects | No |
+| [Excess Food Opportunities Map](https://www.epa.gov/sustainable-management-food/excess-food-opportunities-map) | U.S. EPA | Real Nashville food banks, pantries and soup kitchens; schools and universities with estimated excess food (tons/year) | Network impact → Nashville at a glance; Outreach agent prospects | No |
 | [Food Access Research Atlas](https://www.ers.usda.gov/data-products/food-access-research-atlas/) (2019) | USDA Economic Research Service | Whether a recipient's census tract is low-income / low-access, and its poverty rate | Recipient "area need" badge; matching boost; registration | No |
 | [Census Geocoder](https://geocoding.geo.census.gov/geocoder/) | U.S. Census Bureau | Address → coordinates and census tract | Registration; area need; geocoding event venues | No |
 | [Open-Meteo Forecast API](https://open-meteo.com/) | Open-Meteo | Event-day weather, which adjusts the leftover forecast | Register event form; Outreach agent forecasts | No |
@@ -77,7 +77,7 @@ Every call goes through the server (`src/lib/public-data/`). Responses are cache
 ## Not from a dataset
 - **Event feed:** the Outreach agent's event feed is simulated (`src/lib/scout.ts`). Eventbrite, Ticketmaster and PredictHQ all need accounts or keys, and Nashville's open-data portal has no special-event permit dataset. The weather and venue geocoding on each event are real.
 - **Impact figures:** pounds per unit, kg CO2e per pound, and dollar value per unit (`src/lib/categories.ts`) are app-level estimates for the demo. They don't come from a cited dataset.
-- **Recipients:** the seed organizations are demo data. Real Nashville food banks appear separately under Network impact → Public data.
+- **Recipients:** the seed organizations are demo data. Real Nashville food banks appear separately under Network impact → Nashville at a glance.
 
 ## Tried but not used
 - **OpenStreetMap Overpass:** queries for food banks, soup kitchens and shelters. All three public endpoints returned errors (502, 500 or a timeout) during development.

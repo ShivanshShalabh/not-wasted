@@ -55,7 +55,7 @@ export function PublicDataPanel() {
       <motion.div {...inView} className="relative overflow-hidden rounded-3xl bg-brand-900 p-7 text-white shadow-lift md:p-9">
         <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-brand-500/40 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -bottom-24 left-1/4 h-56 w-56 rounded-full bg-sage-500/25 blur-3xl" />
-        <div className="relative flex flex-wrap items-center gap-2 text-sm font-medium text-brand-100"><Database className="h-4 w-4" /> Public data · {EPA_SOURCE}</div>
+        <div className="relative flex flex-wrap items-center gap-2 text-sm font-medium text-brand-100"><Database className="h-4 w-4" /> Nashville at a glance · {EPA_SOURCE}</div>
         {loading ? (
           <div className="relative mt-5 space-y-3"><div className="h-12 w-3/4 animate-pulse rounded-2xl bg-white/10" /><div className="h-5 w-1/3 animate-pulse rounded-xl bg-white/10" /></div>
         ) : totals ? (

@@ -163,10 +163,19 @@ export interface DemoState {
   batches: Batch[];
   claims: Claim[];
   waitlist: WaitlistEntry[];
+  /** Latest impact report shown on Network impact (written by the report agent, or generated on demand). */
+  latestReport?: ImpactReport;
   recipients: RecipientOrg[];
   pingEventId: string | null;
   accounts: Account[];
   sessionId: string | null;
   lastError: string | null;
   lastNotice: string | null;
+}
+
+export interface ImpactReport {
+  markdown: string;
+  generatedAt: number;
+  source: "oci" | "local";
+  by: "agent" | "manual";
 }

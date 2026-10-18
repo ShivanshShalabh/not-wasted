@@ -52,7 +52,7 @@ On first visit, the app opens on **registration**: choose Donor or Recipient, th
 3. Switch to *Second Harvest* and claim 50. Switch to *Eastside*: the claim is capped by its free space.
 4. Back as **Vanderbilt University**, the Grand Rounds card shows the live split. Open **Manage pickups**, then **Confirm handoff**.
 5. As Vanderbilt, click **Post surplus** and drop a photo, for example `chairs.jpg`. Enter `30`. Music City Furniture Bank shows as the top match.
-6. **Network impact**: open **AI report**, then **Generate**.
+6. **Network impact**: tap the tax-deduction number to see how it was estimated, then open **Impact report** and press **Run report agent** (or **Generate report**). The OCI architecture view lives in the agent console at `/agents`.
 7. Use **Reset demo data** in the account menu.
 
 ## Category model

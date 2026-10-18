@@ -7,6 +7,7 @@ import type { DonorWeek } from "@/lib/agents/report";
 import type { AgentStep } from "@/lib/agents/trace";
 import { AiSourceBadge, AnimatedNumber, Badge, btn, Card, inputCls } from "../../ui";
 import { AgentTrace } from "../AgentTrace";
+import { useNotWasted } from "@/context/NotWastedContext";
 import { useAgent } from "../useAgent";
 
 interface Letter { institution: string; to: string; subject: string; body: string; source: "oci" | "local" }
@@ -17,6 +18,8 @@ interface ReportResponse {
   weekOf: string;
   summary: string;
   letters: Letter[];
+  markdown?: string;
+  source?: "oci" | "local";
   error?: string;
 }
 
@@ -34,6 +37,12 @@ function nextMonday8(from = new Date()) {
 
 export function ReportPanel() {
   const agent = useAgent<ReportResponse>("/api/agents/report");
+  const { dispatch } = useNotWasted();
+  // Each run also becomes the report shown on Network impact.
+  const run = async () => {
+    const r = await agent.run();
+    if (r?.markdown) dispatch({ type: "SAVE_REPORT", report: { markdown: r.markdown, generatedAt: Date.now(), source: r.source ?? "local", by: "agent" } });
+  };
   const [scheduled, setScheduled] = useState(false);
   const [next, setNext] = useState<Date | null>(null);
   useEffect(() => {
@@ -74,7 +83,7 @@ export function ReportPanel() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <button className={`${btn.primary} min-h-11`} disabled={agent.loading} onClick={() => agent.run()}>
+            <button className={`${btn.primary} min-h-11`} disabled={agent.loading} onClick={() => void run()}>
               {agent.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />} {agent.data ? "Run again" : "Run now"}
             </button>
             {agent.data && !agent.loading && <button className={`${btn.ghost} min-h-11`} onClick={agent.reset}><RotateCcw className="h-4 w-4" /> Clear</button>}

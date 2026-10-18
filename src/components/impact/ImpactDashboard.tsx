@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Database, DollarSign, Handshake, Network, Package, Scale, Timer, TriangleAlert } from "lucide-react";
+import { ChevronRight, DollarSign, Handshake, MapPinned, Package, Scale, Timer, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { currentAccount } from "@/lib/auth";
@@ -11,11 +11,11 @@ import type { Category } from "@/lib/types";
 import { AnimatedNumber, Card, CATEGORY_STYLE, fadeUp, PageHeader, SectionTitle, Tabs } from "../ui";
 import { ImpactSummary } from "./ImpactSummary";
 import { NetworkMap } from "./NetworkMap";
-import { OciArchitecture } from "./OciArchitecture";
 import { PublicDataPanel } from "./PublicDataPanel";
 import { RecipientDirectory } from "./RecipientDirectory";
+import { TaxBreakdown } from "./TaxBreakdown";
 
-type Tab = "overview" | "report" | "directory" | "public" | "oci";
+type Tab = "overview" | "report" | "directory" | "public";
 
 /** Warm, theme-matched fills for the category bars (category chips keep their own palette). */
 const BAR: Record<Category, string> = {
@@ -36,17 +36,22 @@ export function ImpactDashboard() {
   const { state, now } = useNotWasted();
   const [tab, setTab] = useState<Tab>("overview");
   const stats = computeImpact(state, now);
+  const me = currentAccount(state);
+  const isRecipient = me?.role === "recipient";
+  // Headline numbers are the signed-in organization's own impact; the rest of the page is network-wide.
+  const mine = computeImpact(state, now, isRecipient ? { recipientId: me?.recipientId } : { donor: me?.orgName });
+  const [taxOpen, setTaxOpen] = useState(false);
   const hero = [
-    { label: "Items rescued", value: stats.totalItems, icon: Package, note: "claimed by recipients across all categories" },
-    { label: "Pounds diverted from landfill", value: stats.lbs, icon: Scale, note: <><span className="tabular"><AnimatedNumber value={stats.co2eKg} /></span> kg CO2e saved</> },
+    { label: isRecipient ? "Items received" : "Items rescued", value: mine.totalItems, icon: Package, note: isRecipient ? "claimed by your organization" : "of your donations claimed by recipients" },
+    { label: isRecipient ? "Pounds kept out of landfill" : "Pounds diverted from landfill", value: mine.lbs, icon: Scale, note: <><span className="tabular"><AnimatedNumber value={mine.co2eKg} from={0} duration={1.6} /></span> kg CO2e saved</> },
     // Tax figures matter to donors only.
-    currentAccount(state)?.role === "recipient"
-      ? { label: "Handoffs completed", value: stats.pickedUp, icon: Handshake, note: "pickups confirmed by recipients" }
-      : { label: "Estimated tax deduction", value: stats.deduction, icon: DollarSign, prefix: "$", note: "IRS 170(e)(3) enhanced for food" },
+    isRecipient
+      ? { label: "Handoffs completed", value: mine.pickedUp, icon: Handshake, note: "pickups you confirmed" }
+      : { label: "Estimated tax deduction", value: mine.deduction, icon: DollarSign, prefix: "$", note: "Tap to see how it's calculated", onClick: () => setTaxOpen(true) },
   ];
   const minor = [
     { label: "Average minutes to claim", value: stats.avgTimeToClaim, icon: Timer },
-    ...(currentAccount(state)?.role === "recipient" ? [{ label: "Open pickups", value: stats.openClaims, icon: Package }] : [{ label: "Handoffs completed", value: stats.pickedUp, icon: Handshake }]),
+    { label: "Handoffs completed", value: stats.pickedUp, icon: Handshake },
     { label: "Missed pickups", value: stats.fellThrough, icon: TriangleAlert },
   ];
   const max = Math.max(1, ...Object.values(stats.byCategory));
@@ -55,24 +60,33 @@ export function ImpactDashboard() {
 
   return (
     <div className="space-y-10">
-      <PageHeader eyebrow={<><Network className="h-3.5 w-3.5" /> All organizations</>} title="Network" accent="impact"
-        description="What the whole Nashville network has rescued so far: items, weight, emissions and value, updated live as donations are claimed." />
+      <PageHeader title="Network" accent="impact"
+        description={<>Your organization&apos;s impact first, then what the whole Nashville network has rescued — updated live as donations are claimed.</>} />
 
       <section className="space-y-4">
+        <h2 className="text-sm font-semibold text-stone-600">Your impact{me ? <> · <span className="text-ink">{me.orgName}</span></> : null}</h2>
         {/* One floating stats card, like the reference hero's: white glass, terracotta Playfair numbers. */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 220, damping: 26, delay: 0.1 }}
           className="relative grid overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-lift ring-1 ring-brand-900/[0.04] backdrop-blur-xl md:grid-cols-3">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-brand-200/40 blur-3xl" />
-          {hero.map(({ label, value, icon: Icon, prefix, note }, i) => (
-            <motion.div key={label} variants={fadeUp} custom={i + 1} initial="hidden" animate="show"
-              className="group relative px-7 py-7 text-center transition-colors duration-500 hover:bg-brand-50/50 md:[&:not(:first-child)]:border-l md:[&:not(:first-child)]:border-brand-100 max-md:[&:not(:first-child)]:border-t max-md:[&:not(:first-child)]:border-brand-100">
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-brand-100 transition-transform duration-500 ease-out group-hover:-rotate-6 group-hover:scale-110"><Icon className="h-5 w-5" /></span>
-              <div className="mt-4 font-display text-5xl font-bold tracking-tight text-brand-700 md:text-6xl">{prefix}<AnimatedNumber value={value} /></div>
-              <div className="mt-2 text-sm font-medium text-ink">{label}</div>
-              <div className="mt-1 text-sm text-stone-500">{note}</div>
-            </motion.div>
-          ))}
+          {hero.map(({ label, value, icon: Icon, prefix, note, onClick }, i) => {
+            const body = (
+              <>
+                <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-brand-100 transition-transform duration-500 ease-out group-hover:-rotate-6 group-hover:scale-110"><Icon className="h-5 w-5" /></span>
+                <div className="mt-4 font-display text-5xl font-bold tracking-tight text-brand-700 md:text-6xl">{prefix}<AnimatedNumber value={value} from={0} duration={1.6} /></div>
+                <div className="mt-2 text-sm font-medium text-ink">{label}</div>
+                <div className={`mt-1 inline-flex items-center gap-1 text-sm ${onClick ? "font-medium text-brand-700" : "text-stone-500"}`}>{note}{onClick && <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}</div>
+              </>
+            );
+            const cls = "group relative block w-full px-7 py-7 text-center transition-colors duration-500 hover:bg-brand-50/50 md:[&:not(:first-child)]:border-l md:[&:not(:first-child)]:border-brand-100 max-md:[&:not(:first-child)]:border-t max-md:[&:not(:first-child)]:border-brand-100";
+            return (
+              <motion.div key={label} variants={fadeUp} custom={i + 1} initial="hidden" animate="show" className={cls}>
+                {onClick ? <button type="button" onClick={onClick} aria-haspopup="dialog" className="w-full cursor-pointer rounded-2xl">{body}</button> : body}
+              </motion.div>
+            );
+          })}
         </motion.div>
+        <h2 className="pt-4 text-sm font-semibold text-stone-600">Across the network</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {minor.map(({ label, value, icon: Icon }, i) => (
             <motion.div key={label} variants={fadeUp} custom={i + 4} initial="hidden" animate="show"
@@ -83,17 +97,16 @@ export function ImpactDashboard() {
             </motion.div>
           ))}
         </div>
-        <p className="text-xs leading-relaxed text-stone-500">Pounds, CO2e and dollar value are app-level per-category estimates (average weight, emissions factor and fair-market value per unit), not figures from a public dataset. See the Public data tab for sourced Nashville data.</p>
+        <p className="text-xs leading-relaxed text-stone-500">Pounds, CO2e and dollar value are app-level per-category estimates (average weight, emissions factor and fair-market value per unit), not figures from a public dataset. See Nashville at a glance for sourced public data.</p>
       </section>
 
       <motion.section {...inView} className="space-y-6">
         <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
         <Tabs id="impact" value={tab} onChange={setTab} items={[
           { value: "overview", label: "Overview" },
-          { value: "report", label: "AI report" },
+          { value: "report", label: "Impact report" },
           { value: "directory", label: "Directory" },
-          { value: "public", label: <><Database className="h-3.5 w-3.5" /> Public data</> },
-          { value: "oci", label: "OCI architecture" },
+          { value: "public", label: <><MapPinned className="h-3.5 w-3.5" /> Nashville at a glance</> },
         ]} />
         </div>
 
@@ -142,10 +155,10 @@ export function ImpactDashboard() {
             {tab === "report" && <ImpactSummary stats={stats} />}
             {tab === "directory" && <RecipientDirectory />}
             {tab === "public" && <PublicDataPanel />}
-            {tab === "oci" && <OciArchitecture />}
           </motion.div>
         </AnimatePresence>
       </motion.section>
+      {!isRecipient && me && <TaxBreakdown donor={me.orgName} open={taxOpen} onClose={() => setTaxOpen(false)} />}
     </div>
   );
 }

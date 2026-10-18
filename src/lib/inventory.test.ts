@@ -159,3 +159,21 @@ describe("capacity and claim edits", () => {
     expect(joinWaitlist(full, "bat_grand_rounds", "rcp_eastside", 10, 1).error).toMatch(/edit it instead/);
   });
 });
+
+import { computeImpact, deductionFor } from "./impact";
+
+describe("impact and deductions", () => {
+  it("never deducts more than fair-market value for food", () => {
+    const d = deductionFor("food", 100); // FMV $800, basis $480
+    expect(d).toMatchObject({ fmv: 800, basis: 480, deduction: 640, method: "§170(e)(3) enhanced" });
+    expect(deductionFor("furniture", 2).deduction).toBe(2 * 45);
+  });
+
+  it("scopes impact to one donor or one recipient", () => {
+    const all = computeImpact(s(), 1_000_000);
+    const eastside = computeImpact(s(), 1_000_000, { recipientId: "rcp_eastside" });
+    expect(eastside.totalItems).toBe(80); // 50 pasta + 30 pastry
+    expect(computeImpact(s(), 1_000_000, { donor: "Vanderbilt University" }).totalItems).toBe(all.totalItems);
+    expect(computeImpact(s(), 1_000_000, { donor: "Belmont University" }).totalItems).toBe(0);
+  });
+});

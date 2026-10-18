@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { localLetter, localSummary, weeklyStats } from "@/lib/agents/report";
+import { localLetter, localSummary, reportMarkdown, weeklyStats } from "@/lib/agents/report";
 import { step } from "@/lib/agents/trace";
 import { writeWithAI } from "@/lib/oci-service";
 import { readState } from "../_shared";
@@ -23,5 +23,5 @@ export async function POST(req: Request) {
     }),
   );
   steps.push(step("Writing summary & letters", [`1 network summary`, `${letters.length} donor letter${letters.length === 1 ? "" : "s"}`, "Held for review — nothing is sent automatically"], summary.source === "oci" ? "OCI Generative AI" : undefined));
-  return NextResponse.json({ steps, totals, donors, weekOf, summary: summary.text, letters });
+  return NextResponse.json({ steps, totals, donors, weekOf, summary: summary.text, letters, markdown: reportMarkdown({ weekOf, summary: summary.text, totals, donors }), source: summary.source });
 }
