@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, smallestClaim } from "@/lib/categories";
 import type { Batch, Claim, RecipientOrg } from "@/lib/types";
 import { btn } from "../ui";
 import { QtyStepper, qtyError } from "./QtyStepper";
@@ -17,7 +17,8 @@ export function ClaimEditor({ claim, batch, org }: { claim: Claim; batch: Batch;
   const unit = CATEGORIES[batch.category].unit;
   // Growing is bounded by what's left in the batch and by the org's remaining capacity.
   const max = claim.qty + Math.min(batch.remainingQty, org.capacity[batch.category] ?? 0);
-  const err = qtyError(draft, 1, max, unit);
+  const least = smallestClaim({ category: batch.category, remainingQty: batch.remainingQty + claim.qty });
+  const err = qtyError(draft, least, max, unit);
 
   const save = () => {
     if (err) return;
@@ -42,8 +43,8 @@ export function ClaimEditor({ claim, batch, org }: { claim: Claim; batch: Batch;
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="mt-4 space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <QtyStepper value={draft} onChange={setDraft} min={1} max={max} step={batch.category === "furniture" ? 1 : 5} label={`Claim quantity in ${unit}`} invalid={!!err} />
-                <span className="text-xs text-stone-600">Up to <span className="tabular">{max}</span> {unit}</span>
+                <QtyStepper value={draft} onChange={setDraft} min={least} max={max} step={batch.category === "furniture" ? 1 : 5} label={`Claim quantity in ${unit}`} invalid={!!err} />
+                <span className="text-xs text-stone-600">{least > 1 && <><span className="tabular">{least}</span>–</>}<span className="tabular">{max}</span> {unit}</span>
               </div>
               {err && <p role="alert" className="text-sm font-medium text-red-600">{err}</p>}
               <div className="flex flex-wrap gap-2">

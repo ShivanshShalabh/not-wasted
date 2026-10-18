@@ -7,7 +7,7 @@ import { useNotWasted } from "@/context/NotWastedContext";
 import { missingFields, STORAGE_CHOICES, type IntakeDraft, type MissingField } from "@/lib/agents/intake";
 import type { AgentStep } from "@/lib/agents/trace";
 import { currentAccount } from "@/lib/auth";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, minQty } from "@/lib/categories";
 import { newId } from "@/lib/inventory";
 import { matchRecipients } from "@/lib/matching";
 import { ALLERGEN_OPTIONS, DIETARY_OPTIONS, Pill } from "../../AttributeTags";
@@ -301,9 +301,9 @@ function QuickReply({ field, draft, detected, suggested, onAnswer }: {
   if (field === "qty") {
     const n = Math.round(Number(qty));
     return (
-      <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (n > 0) onAnswer("qty", { qty: n }, `${n} ${unit}`); }}>
-        <input type="number" min={1} inputMode="numeric" value={qty} onChange={(e) => setQty(e.target.value)} placeholder="80" aria-label={`Quantity in ${unit}`} className={`${inputCls} tabular w-28`} autoFocus />
-        <button disabled={!(n > 0)} className={okBtn}>Confirm</button>
+      <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (n >= minQty(draft.category)) onAnswer("qty", { qty: n }, `${n} ${unit}`); }}>
+        <input type="number" min={minQty(draft.category)} inputMode="numeric" value={qty} onChange={(e) => setQty(e.target.value)} placeholder="80" aria-label={`Quantity in ${unit}`} className={`${inputCls} tabular w-28`} autoFocus />
+        <button disabled={!(n >= minQty(draft.category))} className={okBtn}>Confirm</button>
       </form>
     );
   }

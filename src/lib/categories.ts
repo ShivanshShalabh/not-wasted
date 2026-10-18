@@ -1,4 +1,4 @@
-import type { Category } from "./types";
+import type { Batch, Category } from "./types";
 
 export interface CategoryConfig {
   label: string;
@@ -23,3 +23,9 @@ export const CATEGORIES: Record<Category, CategoryConfig> = {
 export const CATEGORY_LIST = Object.keys(CATEGORIES) as Category[];
 
 export const unitOf = (c: Category) => CATEGORIES[c].unit;
+
+/** Smallest food donation or pickup worth a trip. Other categories only need 1. */
+export const MIN_FOOD_QTY = 5;
+export const minQty = (c: Category) => (c === "food" ? MIN_FOOD_QTY : 1);
+/** Smallest claim on a batch: the category minimum, or everything left when fewer remain. */
+export const smallestClaim = (b: Pick<Batch, "category" | "remainingQty">) => Math.max(1, Math.min(minQty(b.category), b.remainingQty));

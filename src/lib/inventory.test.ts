@@ -179,3 +179,18 @@ describe("impact and deductions", () => {
     expect(computeImpact(s(), 1_000_000, { donor: "Belmont University" }).totalItems).toBe(0);
   });
 });
+
+import { smallestClaim } from "./categories";
+
+describe("minimum food quantity", () => {
+  it("requires at least 5 for food claims, waitlists and donations, but lets the last few go", () => {
+    expect(claimBatch(s(), "bat_grand_rounds", "rcp_st_lukes", 4, 1).error).toMatch(/at least 5/);
+    expect(claimBatch(s(), "bat_grand_rounds", "rcp_st_lukes", 5, 1).error).toBeUndefined();
+    expect(claimBatch(s(), "bat_hotel_linen", "rcp_st_lukes", 1, 1).error).toBeUndefined(); // clothing: no minimum
+    expect(updateClaim(s(), "clm_seed_1", 3).error).toMatch(/at least 5/);
+    expect(joinWaitlist(s(), "bat_tech_summit", "rcp_st_lukes", 2, 1).error).toMatch(/at least 5/);
+    const st = reducer(s(), { type: "BROADCAST", batch: { ...s().batches[0], id: "bat_tiny", totalQty: 3, remainingQty: 3 } });
+    expect(st.lastError).toMatch(/at least 5/);
+    expect(smallestClaim({ category: "food", remainingQty: 3 })).toBe(3);
+  });
+});

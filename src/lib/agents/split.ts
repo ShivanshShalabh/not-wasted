@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../categories";
+import { CATEGORIES, smallestClaim } from "../categories";
 import { matchRecipients } from "../matching";
 import type { Batch, DemoState } from "../types";
 import { step, type AgentStep } from "./trace";
@@ -21,7 +21,7 @@ export function proposeSplit(state: DemoState, batch: Batch, radiusMi = 10): { a
   for (const m of ranked) {
     if (left <= 0) break;
     const qty = Math.min(left, m.recipient.capacity[batch.category] ?? 0);
-    if (qty < 1) continue;
+    if (qty < smallestClaim({ category: batch.category, remainingQty: left })) continue;
     allocations.push({ recipientId: m.recipient.id, name: m.recipient.name, qty, score: m.score, reason: m.reasons.find((r) => !/^(Can take all|Room for|\d.* mi away)/.test(r)) ?? `${m.recipient.distanceMi} mi away`, channel: m.recipient.notifyChannel });
     left -= qty;
   }

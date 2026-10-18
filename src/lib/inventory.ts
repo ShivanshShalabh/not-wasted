@@ -1,4 +1,4 @@
-import { CATEGORIES } from "./categories";
+import { CATEGORIES, minQty, smallestClaim } from "./categories";
 import type { Account, AreaNeed, Batch, Category, Claim, ImpactReport, DemoState, DonorEvent, RecipientOrg, View, WaitlistEntry } from "./types";
 
 export type Action =
@@ -42,7 +42,8 @@ export const newId = (prefix: string) => `${prefix}_${Math.random().toString(36)
 export function maxClaimable(batch: Batch, recipient: RecipientOrg): number {
   if (batch.status !== "AVAILABLE") return 0;
   if (!recipient.acceptedCategories.includes(batch.category)) return 0;
-  return Math.max(0, Math.min(batch.remainingQty, recipient.capacity[batch.category] ?? 0));
+  const max = Math.max(0, Math.min(batch.remainingQty, recipient.capacity[batch.category] ?? 0));
+  return max >= smallestClaim(batch) ? max : 0;
 }
 
 /**
@@ -56,7 +57,8 @@ export function claimBatch(state: DemoState, batchId: string, recipientId: strin
   if (batch.status !== "AVAILABLE") return { state, error: "This batch is fully claimed." };
   if (!recipient.acceptedCategories.includes(batch.category))
     return { state, error: `${recipient.name} does not accept ${CATEGORIES[batch.category].label.toLowerCase()}.` };
-  if (!Number.isInteger(qty) || qty < 1) return { state, error: "Claim at least 1." };
+  const least = smallestClaim(batch);
+  if (!Number.isInteger(qty) || qty < least) return { state, error: `Claim at least ${least} ${CATEGORIES[batch.category].unit}.` };
   if (qty > batch.remainingQty) return { state, error: `Only ${batch.remainingQty} left — someone claimed first.` };
   const cap = recipient.capacity[batch.category] ?? 0;
   if (qty > cap) return { state, error: `Exceeds your available capacity (${cap}).` };
@@ -114,7 +116,7 @@ export function joinWaitlist(state: DemoState, batchId: string, recipientId: str
   if (batch.status === "AVAILABLE") return { state, error: "Still available — claim it directly." };
   if (!recipient.acceptedCategories.includes(batch.category))
     return { state, error: `${recipient.name} does not accept ${CATEGORIES[batch.category].label.toLowerCase()}.` };
-  if (!Number.isInteger(qty) || qty < 1) return { state, error: "Request at least 1." };
+  if (!Number.isInteger(qty) || qty < minQty(batch.category)) return { state, error: `Request at least ${minQty(batch.category)} ${CATEGORIES[batch.category].unit}.` };
   if (state.waitlist.some((w) => w.batchId === batchId && w.recipientId === recipientId)) return { state, error: "You're already on this waitlist." };
   if (state.claims.some((c) => c.batchId === batchId && c.recipientId === recipientId && c.status === "CLAIMED"))
     return { state, error: "You already have a claim on this batch — edit it instead." };
@@ -159,6 +161,8 @@ export function updateClaim(state: DemoState, claimId: string, qty: number): Res
   if (qty === 0) return cancelClaim(state, claimId);
   const batch = state.batches.find((b) => b.id === claim.batchId)!;
   const recipient = state.recipients.find((r) => r.id === claim.recipientId)!;
+  const least = smallestClaim({ category: batch.category, remainingQty: batch.remainingQty + claim.qty });
+  if (qty < least) return { state, error: `Keep at least ${least} ${CATEGORIES[batch.category].unit}, or cancel the claim.` };
   const delta = qty - claim.qty;
   const cap = recipient.capacity[batch.category] ?? 0;
   if (delta > batch.remainingQty) return { state, error: `Only ${batch.remainingQty} more available.` };
@@ -191,6 +195,7 @@ export function updateQuantity(state: DemoState, batchId: string, totalQty: numb
   const batch = state.batches.find((b) => b.id === batchId);
   if (!batch) return { state, error: "Batch not found." };
   const claimed = batch.totalQty - batch.remainingQty;
+  if (totalQty < minQty(batch.category)) return { state, error: `Donations need at least ${minQty(batch.category)} ${CATEGORIES[batch.category].unit}.` };
   if (!Number.isInteger(totalQty) || totalQty < claimed)
     return { state, error: `Cannot go below ${claimed} already claimed.` };
   const remainingQty = totalQty - claimed;
@@ -266,6 +271,8 @@ export function reducer(state: DemoState, action: Action): DemoState {
     case "CLOSE_PING":
       return { ...state, pingEventId: null };
     case "BROADCAST":
+      if (action.batch.totalQty < minQty(action.batch.category))
+        return { ...state, lastError: `Donations need at least ${minQty(action.batch.category)} ${CATEGORIES[action.batch.category].unit}.`, lastNotice: null };
       return {
         ...state,
         pingEventId: null,

@@ -3,6 +3,7 @@
 import { AlarmClock, Radio, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
+import { MIN_FOOD_QTY } from "@/lib/categories";
 import { countdown, photoThumbnail } from "@/lib/format";
 import { newId } from "@/lib/inventory";
 import type { DonorEvent } from "@/lib/types";
@@ -64,8 +65,8 @@ export function T45PingModal({ event }: { event: DonorEvent }) {
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-4">
-          <Field label="How many meals are left?">
-            <input type="number" min={1} className={`${inputCls} text-2xl font-bold`} value={qty} onChange={(e) => setQty(Math.max(1, +e.target.value))} />
+          <Field label="How many meals are left?" hint={`At least ${MIN_FOOD_QTY}; smaller amounts aren't worth a pickup trip.`}>
+            <input type="number" min={MIN_FOOD_QTY} className={`${inputCls} text-2xl font-bold`} value={qty} onChange={(e) => setQty(Math.max(MIN_FOOD_QTY, Math.floor(+e.target.value) || MIN_FOOD_QTY))} />
           </Field>
           <Field label="What's left (helps AI tag allergens)">
             <textarea rows={2} className={inputCls} value={description} onChange={(e) => setDescription(e.target.value)} />

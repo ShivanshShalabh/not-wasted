@@ -5,7 +5,7 @@ import { AlertTriangle, Barcode, Camera, CheckCircle2, ChevronDown, Database, Ha
 import { useEffect, useRef, useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { currentAccount } from "@/lib/auth";
-import { CATEGORIES, CATEGORY_LIST } from "@/lib/categories";
+import { CATEGORIES, CATEGORY_LIST, minQty } from "@/lib/categories";
 import { photoThumbnail } from "@/lib/format";
 import { newId } from "@/lib/inventory";
 import { STORAGE_TYPES, type Category, type Condition, type ItemAttributes, type QualityVerdict, type StorageType, type Transport } from "@/lib/types";
@@ -426,8 +426,8 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
         </div>
       </div>
 
-      <Field label={`How many ${cfg.unit}?`} hint={scan.estimatedQty ? `AI counted about ${scan.estimatedQty} in the photo` : undefined}>
-        <input autoFocus type="number" min={1} required className={`${inputCls} !py-3 text-2xl font-bold`} placeholder="0" value={qty} onChange={(e) => setQty(e.target.value ? Math.max(1, +e.target.value) : "")} />
+      <Field label={`How many ${cfg.unit}?`} hint={[scan.estimatedQty ? `AI counted about ${scan.estimatedQty} in the photo` : "", minQty(scan.category) > 1 ? `At least ${minQty(scan.category)} for food` : ""].filter(Boolean).join(" · ") || undefined}>
+        <input autoFocus type="number" min={minQty(scan.category)} required className={`${inputCls} !py-3 text-2xl font-bold`} placeholder="0" value={qty} onChange={(e) => setQty(e.target.value ? Math.max(1, +e.target.value) : "")} />
       </Field>
 
       <fieldset>

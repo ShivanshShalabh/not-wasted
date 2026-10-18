@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, ChevronDown, Clock, ListOrdered, MapPinned, Minus, PackageCheck, Plus, Ruler, ShieldCheck, Sparkles, Truck, Users } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, minQty, smallestClaim } from "@/lib/categories";
 import { checkDietary } from "@/lib/dietary";
 import { countdown } from "@/lib/format";
 import { maxClaimable } from "@/lib/inventory";
@@ -66,7 +66,9 @@ export function BroadcastCard({ batch, org, match }: { batch: Batch; org: Recipi
   const [open, setOpen] = useState(false);
   const [details, setDetails] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [qty, setQty] = useState(Math.min(25, max) || 1);
+  // Food pickups start at 5 (or whatever is left, if fewer).
+  const least = smallestClaim(batch);
+  const [qty, setQty] = useState(Math.max(least, Math.min(25, max)));
   const myOpen = state.claims.find((c) => c.batchId === batch.id && c.recipientId === org.id && c.status === "CLAIMED");
   const pickedUp = state.claims.filter((c) => c.batchId === batch.id && c.recipientId === org.id && c.status === "PICKED_UP").reduce((s, c) => s + c.qty, 0);
   const locked = batch.status === "FULLY_CLAIMED";
@@ -75,12 +77,13 @@ export function BroadcastCard({ batch, org, match }: { batch: Batch; org: Recipi
   const diet = checkDietary(batch, org.requirements);
   const queue = state.waitlist.filter((w) => w.batchId === batch.id).sort((x, y) => x.joinedAt - y.joinedAt);
   const myWait = queue.findIndex((w) => w.recipientId === org.id);
-  const [waitQty, setWaitQty] = useState(Math.max(1, Math.min(cap, batch.totalQty)));
+  const waitMin = minQty(batch.category);
+  const [waitQty, setWaitQty] = useState(Math.max(waitMin, Math.min(cap, batch.totalQty)));
   const left = batch.pickupBy - now;
   const items = itemList(batch.category, a);
 
   // Keep the selector inside the live bound when another org claims.
-  useEffect(() => setQty((q) => Math.max(1, Math.min(q, max || 1))), [max]);
+  useEffect(() => setQty((q) => Math.max(least, Math.min(q, max || least))), [max, least]);
   useEffect(() => { if (max === 0) setOpen(false); }, [max]);
 
   const quick = [
@@ -217,8 +220,8 @@ export function BroadcastCard({ batch, org, match }: { batch: Batch; org: Recipi
                 ) : (
                   <motion.div key="stepper" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
                     <div className="flex items-center rounded-full bg-white ring-1 ring-stone-300">
-                      <button aria-label="Fewer" className="p-2.5 text-stone-500 transition hover:text-ink disabled:opacity-30" disabled={waitQty <= 1} onClick={() => setWaitQty(Math.max(1, waitQty - 5))}><Minus className="h-4 w-4" /></button>
-                      <input type="number" min={1} value={waitQty} aria-label="Waitlist quantity" onChange={(e) => setWaitQty(Math.max(1, Math.floor(+e.target.value) || 1))}
+                      <button aria-label="Fewer" className="p-2.5 text-stone-500 transition hover:text-ink disabled:opacity-30" disabled={waitQty <= waitMin} onClick={() => setWaitQty(Math.max(waitMin, waitQty - 5))}><Minus className="h-4 w-4" /></button>
+                      <input type="number" min={waitMin} value={waitQty} aria-label="Waitlist quantity" onChange={(e) => setWaitQty(Math.max(waitMin, Math.floor(+e.target.value) || waitMin))}
                         className="tabular w-14 bg-transparent text-center text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
                       <button aria-label="More" className="p-2.5 text-stone-500 transition hover:text-ink" onClick={() => setWaitQty(waitQty + 5)}><Plus className="h-4 w-4" /></button>
                     </div>
@@ -243,18 +246,18 @@ export function BroadcastCard({ batch, org, match }: { batch: Batch; org: Recipi
           {open && !locked && !myOpen && max > 0 && (
             <motion.div {...reveal} className="overflow-hidden">
               <div className="space-y-4 rounded-2xl bg-brand-50/50 p-4 ring-1 ring-brand-100">
-                <div className="text-sm font-medium">How many {cfg.unit} do you need?</div>
+                <div className="text-sm font-medium">How many {cfg.unit} do you need?{least > 1 && <span className="font-normal text-stone-500"> At least <span className="tabular">{least}</span>.</span>}</div>
                 <div className="grid grid-cols-4 gap-2">
                   {quick.map((q) => (
-                    <button key={q.label} disabled={q.value < 1 || q.value > max} onClick={() => setQty(q.value)}
+                    <button key={q.label} disabled={q.value < least || q.value > max} onClick={() => setQty(q.value)}
                       className={`tabular whitespace-nowrap rounded-full px-1 py-2 text-sm font-medium ring-1 transition duration-200 hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 ${qty === q.value ? "bg-brand-600 text-white ring-brand-600" : "bg-white ring-stone-200 hover:bg-brand-50 hover:text-brand-700 hover:ring-brand-200"}`}>
                       {q.label}
                     </button>
                   ))}
                 </div>
                 <div className="flex items-center gap-3">
-                  <input type="range" min={1} max={max} value={qty} onChange={(e) => setQty(+e.target.value)} className="flex-1 accent-brand-600" aria-label="Claim quantity" />
-                  <input type="number" min={1} max={max} value={qty} onChange={(e) => setQty(Math.max(1, Math.min(max, +e.target.value || 1)))}
+                  <input type="range" min={least} max={max} value={qty} onChange={(e) => setQty(+e.target.value)} className="flex-1 accent-brand-600" aria-label="Claim quantity" />
+                  <input type="number" min={least} max={max} value={qty} onChange={(e) => setQty(Math.max(least, Math.min(max, +e.target.value || least)))}
                     className="tabular w-20 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-right text-sm outline-none focus:border-brand-500" aria-label="Claim quantity (exact)" />
                 </div>
                 <div className="flex gap-2">

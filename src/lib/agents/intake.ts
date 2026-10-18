@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../categories";
+import { CATEGORIES, minQty } from "../categories";
 import type { Category, ItemAttributes, StorageType } from "../types";
 
 /**
@@ -49,7 +49,8 @@ export function parseLocation(text: string): string {
 
 export function missingFields(d: IntakeDraft): MissingField[] {
   const out: MissingField[] = [];
-  if (!d.qty) out.push("qty");
+  // Too few to be worth a pickup counts as missing, so the agent asks again.
+  if (!d.qty || d.qty < minQty(d.category)) out.push("qty");
   if (!d.pickupBy) out.push("pickupBy");
   if (!d.location) out.push("location");
   if (d.category === "food" && !d.attributes.storage) out.push("storage");
