@@ -129,8 +129,9 @@ const PREVIEWS: Preview[][] = [
   [
     { icon: Armchair, tile: "bg-amber-100 text-amber-800", title: "Office chairs", meta: "Vanderbilt facilities", h: "min-h-56",
       body: <><Stat k="25" v="pieces" /><Pill tone="brand">Pickup by Fri</Pill></> },
-    { icon: Sparkles, tile: "bg-brand-100 text-brand-700", title: "Best match", meta: "Second Harvest", h: "min-h-48",
-      body: <><Stat k="91%" v="fit" /><Bar pct={91} tone="bg-brand-500" /></> },
+    // What a food bank sees: a new donation ranked against its needs.
+    { icon: Sparkles, tile: "bg-brand-100 text-brand-700", title: "Matched for you", meta: "Produce boxes · Belmont Dining", h: "min-h-48",
+      body: <><Stat k="91%" v="fit" /><Bar pct={91} tone="bg-brand-500" /><span className="text-xs text-stone-600">Fits your fridge space · 2 mi</span></> },
   ],
 ];
 
