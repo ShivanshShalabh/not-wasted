@@ -57,6 +57,36 @@ export const ALLERGEN_OPTIONS = ["Gluten", "Dairy", "Eggs", "Peanuts", "Tree nut
 export const DIETARY_OPTIONS = ["Vegetarian", "Vegan", "Halal", "Kosher", "Gluten-free", "Dairy-free"];
 export const CONDITION_OPTIONS: Condition[] = ["New", "Like New", "Good", "Fair"];
 
+/** Case-insensitive union of two tag lists, keeping the first list's spelling. */
+export const mergeTags = (a: string[] | undefined, b: string[]) => [...(a ?? []), ...b.filter((x) => !(a ?? []).some((y) => y.toLowerCase() === x.toLowerCase()))];
+/** Keep only tags that match `options` (case-insensitive), in their canonical spelling. Drops AI noise like "Non-Vegan". */
+export const knownTags = (list: string[] | undefined, options: string[]) =>
+  options.filter((o) => list?.some((v) => v.toLowerCase() === o.toLowerCase()));
+/** Add or remove one tag (case-insensitive). */
+export const toggleTag = (list: string[] | undefined, v: string) =>
+  list?.some((x) => x.toLowerCase() === v.toLowerCase()) ? list.filter((x) => x.toLowerCase() !== v.toLowerCase()) : [...(list ?? []), v];
+
+/** Toggleable tag pills (allergens, dietary). Values outside `options` (e.g. AI-detected) are shown too. */
+export function TagChips({ label, options, selected, tone, onToggle }: { label: string; options: string[]; selected?: string[]; tone: "red" | "green"; onToggle: (v: string) => void }) {
+  const all = [...options, ...(selected ?? []).filter((v) => !options.some((o) => o.toLowerCase() === v.toLowerCase()))];
+  const on = tone === "red" ? "bg-red-50 text-red-700 ring-red-300" : "bg-sage-100/80 text-[#2f6b3d] ring-sage-500/60";
+  return (
+    <div>
+      <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
+        {all.map((o) => {
+          const active = selected?.some((v) => v.toLowerCase() === o.toLowerCase());
+          return (
+            <button key={o} type="button" aria-pressed={active} onClick={() => onToggle(selected?.find((v) => v.toLowerCase() === o.toLowerCase()) ?? o)}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ring-1 transition duration-200 hover:-translate-y-px active:scale-95 ${active ? on : "bg-white text-stone-600 ring-stone-200 hover:bg-brand-50 hover:text-brand-700 hover:ring-brand-200"}`}>{o}</button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 /** Which attribute holds the item list for a category. */
 export function itemKey(category: Category) {
   return category === "food" ? "items" : category === "furniture" ? "itemTypes" : category === "clothing" ? "garmentTypes" : undefined;

@@ -1,7 +1,7 @@
 import { predictSurplus } from "./forecast";
 import type { Account, Batch, Claim, DemoState, DonorEvent, RecipientOrg } from "./types";
 
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 const MIN = 60_000;
 const HOUR = 60 * MIN;
 
@@ -76,7 +76,7 @@ export const DEMO_ACCOUNTS: Account[] = [
 export function createSeedState(now = Date.now()): DemoState {
   const careerFair: DonorEvent = {
     id: "evt_career_fair",
-    name: "University Engineering Career Fair",
+    name: "Boxed lunch leftovers",
     institution: "Vanderbilt University",
     department: "School of Engineering — Career Center",
     address: "2301 Vanderbilt Pl, Nashville, TN 37235",
@@ -86,6 +86,8 @@ export function createSeedState(now = Date.now()): DemoState {
     rsvps: 300,
     foodOrdered: 400,
     mealDescription: "Boxed lunches: turkey & veggie wraps, chips, cookies, fruit",
+    allergens: ["Gluten", "Dairy", "Eggs"],
+    dietary: [],
     storage: "Refrigerated",
     transport: "Recipient picks up",
     contact: "events@engineering.vanderbilt.edu",
@@ -94,7 +96,7 @@ export function createSeedState(now = Date.now()): DemoState {
   };
   const grandRounds: DonorEvent = {
     id: "evt_grand_rounds",
-    name: "Vanderbilt / Metro Medical Grand Rounds",
+    name: "Pasta & salad trays",
     institution: "Vanderbilt University",
     department: "VUMC — Graduate Medical Education",
     address: "1211 Medical Center Dr, Nashville, TN 37232",
@@ -104,6 +106,8 @@ export function createSeedState(now = Date.now()): DemoState {
     rsvps: 220,
     foodOrdered: 300,
     mealDescription: "Hot pasta primavera & garden salad",
+    allergens: ["Gluten", "Dairy"],
+    dietary: ["Vegetarian"],
     storage: "Warm/Insulated",
     transport: "Recipient picks up",
     contact: "gme-events@vumc.org",
@@ -113,16 +117,18 @@ export function createSeedState(now = Date.now()): DemoState {
   };
   const techSummit: DonorEvent = {
     id: "evt_tech_summit",
-    name: "Corporate Tech Summit Breakfast",
+    name: "Pastry & fruit boxes",
     institution: "Vanderbilt University",
     department: "Owen School of Management — Industry Relations",
     address: "401 21st Ave S, Nashville, TN 37203",
-    eventType: "Corporate Breakfast",
+    eventType: "Corporate Event",
     start: now - 5 * HOUR,
     end: now - 3 * HOUR,
     rsvps: 320,
     foodOrdered: 340,
     mealDescription: "Pastry & fruit boxes",
+    allergens: ["Gluten", "Dairy", "Eggs", "Tree nuts"],
+    dietary: ["Vegetarian"],
     storage: "Shelf-Stable",
     transport: "Donor delivers",
     contact: "industry@owen.vanderbilt.edu",

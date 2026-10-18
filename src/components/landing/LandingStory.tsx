@@ -242,7 +242,7 @@ export function LandingStory({ onStart, onRegister }: { onStart: () => void; onR
             {/* 1: form */}
             <div data-screen className="absolute inset-0 space-y-4 p-6 pt-10">
               <div className="font-display text-xl font-semibold">Register an event</div>
-              {["Spring Career Fair", "Fri 12:00 – 3:00 PM", "300 guests · 400 lunches"].map((f) => (
+              {["Boxed lunch leftovers", "Fri 12:00 – 3:00 PM", "300 guests · 400 lunches"].map((f) => (
                 <div key={f} className="rounded-2xl bg-white p-3 text-sm text-ink shadow-sm ring-1 ring-stone-200"><div data-field className="truncate">{f}</div></div>
               ))}
               <div className="grid grid-cols-2 gap-2 text-xs font-semibold"><div className="rounded-xl bg-brand-600 p-2.5 text-center text-white">We&apos;ll deliver</div><div className="rounded-xl bg-white p-2.5 text-center ring-1 ring-stone-200">Food bank picks up</div></div>

@@ -5,7 +5,7 @@ export const NO_SHOW: Record<EventType, number> = {
   "Career Fair": 0.15,
   Conference: 0.2,
   "Medical Rounds": 0.12,
-  "Corporate Breakfast": 0.25,
+  "Corporate Event": 0.25,
   Gala: 0.08,
   Other: 0.18,
 };

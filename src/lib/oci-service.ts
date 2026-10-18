@@ -268,6 +268,9 @@ export interface ExtractedEvent {
   rsvps: number;
   foodOrdered: number;
   mealDescription: string;
+  /** Allergens and dietary labels for the food listed on the menu / catering order. */
+  allergens: string[];
+  dietary: string[];
   contact: string;
   /** True when nothing could be read from the image; every other field is then empty. */
   unreadable?: boolean;
@@ -275,7 +278,7 @@ export interface ExtractedEvent {
 
 /** Without OCI vision there is no OCR: return nothing rather than invent event details. */
 function localExtract(): ExtractedEvent {
-  return { name: "", institution: "", department: "", address: "", eventType: "Other", start: "", end: "", rsvps: 0, foodOrdered: 0, mealDescription: "", contact: "", unreadable: true };
+  return { name: "", institution: "", department: "", address: "", eventType: "Other", start: "", end: "", rsvps: 0, foodOrdered: 0, mealDescription: "", allergens: [], dietary: [], contact: "", unreadable: true };
 }
 
 export function extractEvent(input: { imageBase64: string; mimeType: string }) {
@@ -286,13 +289,15 @@ export function extractEvent(input: { imageBase64: string; mimeType: string }) {
 Today is ${new Date().toISOString().slice(0, 10)}. Copy ONLY details that are explicitly visible in the image. Never guess or infer:
 if a value is not shown, use "" for text or 0 for numbers. Do not estimate food quantities from attendance.
 Return ONLY JSON: {"name": string, "institution": string, "department": string, "address": string,
-"eventType": "Career Fair"|"Conference"|"Medical Rounds"|"Corporate Breakfast"|"Gala"|"Other",
+"eventType": "Career Fair"|"Conference"|"Medical Rounds"|"Corporate Event"|"Gala"|"Other",
 "start": ISO-8601 datetime or "", "end": ISO-8601 datetime or "", "rsvps": number, "foodOrdered": number,
-"mealDescription": string, "contact": string}`,
+"mealDescription": string, "contact": string,
+"allergens": string[] (only from food listed in the image, from: Gluten, Dairy, Eggs, Peanuts, Tree nuts, Soy, Fish, Shellfish, Sesame),
+"dietary": string[] (only labels stated in the image, from: Vegetarian, Vegan, Halal, Kosher, Gluten-free, Dairy-free)}`,
         { model: env.visionModel, image: { base64: input.imageBase64, mimeType: input.mimeType } },
       );
       const parsed = parseJson<Partial<ExtractedEvent>>(out);
-      const kept = Object.fromEntries(Object.entries(parsed).filter(([, v]) => v !== "" && v !== 0 && v != null));
+      const kept = Object.fromEntries(Object.entries(parsed).filter(([, v]) => v !== "" && v !== 0 && v != null && !(Array.isArray(v) && !v.length)));
       return { ...localExtract(), ...kept, unreadable: Object.keys(kept).length === 0 } as ExtractedEvent;
     },
     () => localExtract(),

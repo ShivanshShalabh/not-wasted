@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Handshake, ImageUp, Send, Sparkles, Truck, X } from "lucide-react";
+import { ChevronDown, Handshake, ImageUp, Loader2, Send, Sparkles, Truck, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { NO_SHOW, predictSurplus, WEATHER, type Weather } from "@/lib/forecast";
@@ -9,8 +9,10 @@ import { newId } from "@/lib/inventory";
 import type { EventType, StorageType, Transport } from "@/lib/types";
 import { currentAccount } from "@/lib/auth";
 import { fileToBase64 } from "@/lib/format";
+import { ALLERGEN_OPTIONS, DIETARY_OPTIONS, knownTags, mergeTags, TagChips, toggleTag } from "../AttributeTags";
 import { Dropzone } from "../Dropzone";
 import { AiSourceBadge, btn, Field, inputCls } from "../ui";
+import { useEvaluate } from "../useEvaluate";
 
 const toLocal = (t: number) => new Date(t - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
@@ -36,6 +38,8 @@ export function CreateEventForm({ onDone }: { onDone: () => void }) {
       rsvps: 0,
       foodOrdered: 0,
       mealDescription: "",
+      allergens: [] as string[],
+      dietary: [] as string[],
       storage: "Warm/Insulated" as StorageType,
       transport: "" as Transport | "",
       contact: me?.email ?? "",
@@ -62,7 +66,6 @@ export function CreateEventForm({ onDone }: { onDone: () => void }) {
       }
       // Copy only what the image actually showed; never invent quantities or defaults.
       const read: Partial<typeof f> = {};
-      if (d.name) read.name = d.name;
       if (d.department) read.department = d.department;
       if (d.address) read.address = d.address;
       if (d.eventType && d.eventType in NO_SHOW && d.eventType !== "Other") read.eventType = d.eventType;
@@ -71,6 +74,10 @@ export function CreateEventForm({ onDone }: { onDone: () => void }) {
       if (d.rsvps > 0) read.rsvps = d.rsvps;
       if (d.foodOrdered > 0) read.foodOrdered = d.foodOrdered;
       if (d.mealDescription) read.mealDescription = d.mealDescription;
+      const allergens = knownTags(d.allergens, ALLERGEN_OPTIONS);
+      const dietary = knownTags(d.dietary, DIETARY_OPTIONS);
+      if (allergens.length) read.allergens = mergeTags(f.allergens, allergens);
+      if (dietary.length) read.dietary = mergeTags(f.dietary, dietary);
       if (d.contact) read.contact = d.contact;
       setF((p) => ({ ...p, ...read }));
       setScanned({ source: d.source, fields: Object.keys(read) });
@@ -82,6 +89,15 @@ export function CreateEventForm({ onDone }: { onDone: () => void }) {
     }
   }
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((p) => ({ ...p, [k]: v }));
+
+  // Tag allergens and dietary labels from the menu text; the donor can still toggle any tag.
+  const menuCheck = useEvaluate();
+  const [tagged, setTagged] = useState<"oci" | "local" | null>(null);
+  async function detectTags() {
+    const ev = await menuCheck.evaluate("food", f.mealDescription);
+    setF((p) => ({ ...p, allergens: mergeTags(p.allergens, knownTags(ev.attributes.allergens, ALLERGEN_OPTIONS)), dietary: mergeTags(p.dietary, knownTags(ev.attributes.dietary, DIETARY_OPTIONS)) }));
+    setTagged(ev.source);
+  }
 
   // Event-day weather (Open-Meteo) quietly adjusts the leftover forecast used for the T-45 ping.
   const eventDate = f.start.slice(0, 10);
@@ -112,7 +128,7 @@ export function CreateEventForm({ onDone }: { onDone: () => void }) {
       type: "CREATE_EVENT",
       event: {
         id: newId("evt"), name: f.name.trim() || `${f.institution || "Untitled"} event · ${new Date(start).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`, institution: f.institution, department: f.department, address: f.address,
-        eventType, start, end, rsvps: f.rsvps, foodOrdered: f.foodOrdered, mealDescription: f.mealDescription,
+        eventType, start, end, rsvps: f.rsvps, foodOrdered: f.foodOrdered, mealDescription: f.mealDescription, allergens: f.allergens, dietary: f.dietary,
         storage: f.storage, transport: f.transport as Transport, contact: f.contact, predictedSurplus: forecast.surplus, pingSent: false,
       },
     });
@@ -153,13 +169,33 @@ export function CreateEventForm({ onDone }: { onDone: () => void }) {
             <button type="button" aria-label="Dismiss" onClick={() => setScanned(null)} className="ml-auto rounded-full p-1 transition hover:bg-white"><X className="h-3.5 w-3.5" /></button>
           </div>
         )}
-        <div className="col-span-2"><Field label="Event name">{fromShot("name")}<input required className={inputCls} placeholder="Spring Career Fair" value={f.name} onChange={(e) => set("name", e.target.value)} /></Field></div>
+        <div className="col-span-2"><Field label="Donation name" hint="Food banks see this. Leave out the event and client names.">
+          <input required className={inputCls} placeholder="Boxed lunch leftovers" value={f.name} onChange={(e) => set("name", e.target.value)} />
+        </Field></div>
         <Field label="Starts">{fromShot("start")}<input type="datetime-local" required className={inputCls} value={f.start} onChange={(e) => set("start", e.target.value)} /></Field>
         <Field label="Ends">{fromShot("end")}<input type="datetime-local" required min={f.start} className={inputCls} value={f.end} onChange={(e) => set("end", e.target.value)} /></Field>
         <div className="col-span-2"><Field label="Address">{fromShot("address")}<input required className={inputCls} placeholder="Street, city" value={f.address} onChange={(e) => set("address", e.target.value)} /></Field></div>
         <Field label="Expected guests">{fromShot("rsvps")}<input type="number" min={0} required className={inputCls} value={f.rsvps || ""} placeholder="0" onChange={(e) => set("rsvps", +e.target.value)} /></Field>
         <Field label="Portions ordered">{fromShot("foodOrdered")}<input type="number" min={0} required className={inputCls} value={f.foodOrdered || ""} placeholder="0" onChange={(e) => set("foodOrdered", +e.target.value)} /></Field>
         <div className="col-span-2"><Field label="What's being served (optional)">{fromShot("mealDescription")}<input className={inputCls} placeholder="Boxed lunches, salads, cookies" value={f.mealDescription} onChange={(e) => set("mealDescription", e.target.value)} /></Field></div>
+
+        <div className="col-span-2 space-y-4 rounded-3xl bg-brand-50/40 p-5 ring-1 ring-brand-100">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="text-sm font-semibold text-ink">Allergens &amp; dietary</div>
+              <p className="text-xs text-stone-500">Filled from your screenshot or menu, and checked again from the photo at pickup time. Tap to change.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {tagged && <AiSourceBadge source={tagged} />}
+              <button type="button" onClick={() => void detectTags()} disabled={!f.mealDescription.trim() || menuCheck.loading} className={`${btn.ghost} min-h-11 !px-3 text-brand-700`}>
+                {menuCheck.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Detect from menu
+              </button>
+            </div>
+          </div>
+          {(fromShot("allergens") || fromShot("dietary")) && <div className="-mt-2">{fromShot("allergens") ?? fromShot("dietary")}</div>}
+          <TagChips label="Contains allergens" tone="red" options={ALLERGEN_OPTIONS} selected={f.allergens} onToggle={(v) => set("allergens", toggleTag(f.allergens, v))} />
+          <TagChips label="Dietary" tone="green" options={DIETARY_OPTIONS} selected={f.dietary} onToggle={(v) => set("dietary", toggleTag(f.dietary, v))} />
+        </div>
 
         <fieldset className="col-span-2">
           <legend className="mb-2 text-sm font-medium text-stone-700">Who moves the leftovers?</legend>

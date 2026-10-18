@@ -9,7 +9,7 @@ import { CATEGORIES, CATEGORY_LIST } from "@/lib/categories";
 import { photoThumbnail } from "@/lib/format";
 import { newId } from "@/lib/inventory";
 import { STORAGE_TYPES, type Category, type Condition, type ItemAttributes, type QualityVerdict, type StorageType, type Transport } from "@/lib/types";
-import { ALLERGEN_OPTIONS, CONDITION_OPTIONS, DIETARY_OPTIONS, itemKey, itemList } from "../AttributeTags";
+import { ALLERGEN_OPTIONS, CONDITION_OPTIONS, DIETARY_OPTIONS, itemKey, itemList, mergeTags, TagChips } from "../AttributeTags";
 import { Dropzone } from "../Dropzone";
 import { AiSourceBadge, Badge, btn, CATEGORY_STYLE, CategoryChip, Field, inputCls } from "../ui";
 import { useEvaluate, type Evaluation } from "../useEvaluate";
@@ -24,29 +24,9 @@ const QUALITY_STYLE: Record<QualityVerdict, { cls: string; icon: typeof CheckCir
 const splitList = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 const toggle = (list: string[] | undefined, v: string) => (list?.includes(v) ? list.filter((x) => x !== v) : [...(list ?? []), v]);
 
-function Chips({ label, options, selected, tone, onToggle }: { label: string; options: string[]; selected?: string[]; tone: "red" | "green"; onToggle: (v: string) => void }) {
-  const all = [...options, ...(selected ?? []).filter((v) => !options.some((o) => o.toLowerCase() === v.toLowerCase()))];
-  const on = tone === "red" ? "bg-red-50 text-red-700 ring-red-300" : "bg-sage-100/80 text-[#2f6b3d] ring-sage-500/60";
-  return (
-    <div>
-      <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
-      <div className="flex flex-wrap gap-1.5">
-        {all.map((o) => {
-          const active = selected?.some((v) => v.toLowerCase() === o.toLowerCase());
-          return (
-            <button key={o} type="button" aria-pressed={active} onClick={() => onToggle(selected?.find((v) => v.toLowerCase() === o.toLowerCase()) ?? o)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium ring-1 transition duration-200 hover:-translate-y-px active:scale-95 ${active ? on : "bg-white text-stone-600 ring-stone-200 hover:bg-brand-50 hover:text-brand-700 hover:ring-brand-200"}`}>{o}</button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 type Product = { barcode: string; name: string; brand?: string; allergens: string[]; dietary: string[]; imageUrl?: string };
 type FdcFood = { fdcId: number; description: string; category?: string; brand?: string; ingredients?: string; allergens: string[] };
 
-const mergeCi = (a: string[] | undefined, b: string[]) => [...(a ?? []), ...b.filter((x) => !(a ?? []).some((y) => y.toLowerCase() === x.toLowerCase()))];
 
 /** Build the same Evaluation shape an AI scan returns, from an Open Food Facts product. */
 function productToEvaluation(p: Product): Evaluation {
@@ -403,9 +383,9 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
           {key && <Field label="Items" hint="Comma-separated"><input className={inputCls} value={itemsText} onChange={(e) => setItemsText(e.target.value)} /></Field>}
           {scan.category === "food" && (
             <>
-              <Chips label="Contains allergens" tone="red" options={ALLERGEN_OPTIONS} selected={attrs.allergens} onToggle={(v) => set({ allergens: toggle(attrs.allergens, v) })} />
-              <UsdaCheck query={title.trim() || splitList(itemsText)[0] || ""} current={attrs.allergens} onAdd={(a) => setAttrs((p) => ({ ...p, allergens: mergeCi(p.allergens, a) }))} />
-              <Chips label="Dietary" tone="green" options={DIETARY_OPTIONS} selected={attrs.dietary} onToggle={(v) => set({ dietary: toggle(attrs.dietary, v) })} />
+              <TagChips label="Contains allergens" tone="red" options={ALLERGEN_OPTIONS} selected={attrs.allergens} onToggle={(v) => set({ allergens: toggle(attrs.allergens, v) })} />
+              <UsdaCheck query={title.trim() || splitList(itemsText)[0] || ""} current={attrs.allergens} onAdd={(a) => setAttrs((p) => ({ ...p, allergens: mergeTags(p.allergens, a) }))} />
+              <TagChips label="Dietary" tone="green" options={DIETARY_OPTIONS} selected={attrs.dietary} onToggle={(v) => set({ dietary: toggle(attrs.dietary, v) })} />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Storage">
                   <select className={inputCls} value={attrs.storage ?? ""} onChange={(e) => set({ storage: (e.target.value || undefined) as StorageType | undefined })}>

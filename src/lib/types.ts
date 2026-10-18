@@ -7,7 +7,7 @@ export type StorageType = (typeof STORAGE_TYPES)[number];
 export type Transport = "Donor delivers" | "Recipient picks up" | "Hub";
 export type Condition = "New" | "Like New" | "Good" | "Fair";
 export type NotifyChannel = "Email" | "SMS";
-export type EventType = "Career Fair" | "Conference" | "Medical Rounds" | "Corporate Breakfast" | "Gala" | "Other";
+export type EventType = "Career Fair" | "Conference" | "Medical Rounds" | "Corporate Event" | "Gala" | "Other";
 
 /** Category-specific details. Every field is optional so AI eval and manual entry can fill any subset. */
 export interface ItemAttributes {
@@ -51,6 +51,9 @@ export interface DonorEvent {
   rsvps: number;
   foodOrdered: number;
   mealDescription: string;
+  /** Confirmed by the donor (prefilled from the screenshot, menu or photo check). */
+  allergens: string[];
+  dietary: string[];
   storage: StorageType;
   transport: Transport;
   contact: string;
