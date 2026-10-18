@@ -3,7 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowDown, ArrowRight, BadgeCheck, BellRing, CalendarPlus, Camera, EyeOff, Handshake, MapPin, ScanLine, Sparkles, Trash2, Truck, UserCheck } from "lucide-react";
+import { ArrowDown, ArrowRight, BellRing, CalendarPlus, Camera, Handshake, MapPin, ScanLine, Trash2, Truck } from "lucide-react";
 import { useRef } from "react";
 import { LOGO_GREEN, LOGO_ORANGE, LOGO_PARTS, LOGO_VIEWBOX } from "../Logo";
 
@@ -316,33 +316,7 @@ export function LandingStory({ onStart, onRegister }: { onStart: () => void; onR
         </div>
       </section>
 
-      {/* ---------- Scene 5: trust ---------- */}
-      <section aria-label="Trust" className="mx-auto max-w-7xl px-5 py-28 sm:px-8 lg:px-10">
-        <p data-reveal className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-700">Chapter 5 · Trust</p>
-        <h2 data-reveal className="mt-3 max-w-3xl font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">AI drafts. <span className="text-brand-600">People decide.</span></h2>
-        <div data-stagger className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            [UserCheck, "People confirm", "Donors review every AI-filled field, and confirm anything the quality check flags."],
-            [EyeOff, "Nothing invented", "If the AI can't read it, the form stays blank instead of guessing."],
-            [BadgeCheck, "Verified recipients", "Nonprofit status checked against IRS exempt-organization data."],
-            [Sparkles, "Fair matching", "Food banks in USDA low-income, low-access areas get a visible boost."],
-          ].map(([Icon, h, b]) => {
-            const I = Icon as typeof UserCheck;
-            return (
-              // GSAP animates this wrapper; the card inside keeps its CSS hover transition (the two would fight on one element).
-              <div key={h as string}>
-                <div className="group h-full rounded-3xl border border-white/70 bg-white/85 p-7 shadow-card backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:shadow-lift">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-sage-700 transition duration-500 group-hover:rotate-6 group-hover:scale-110"><I className="h-6 w-6" /></span>
-                  <div className="mt-5 text-lg font-semibold text-ink">{h as string}</div>
-                  <p className="mt-1.5 text-base leading-relaxed text-stone-600">{b as string}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ---------- Scene 6: call to action ---------- */}
+      {/* ---------- Scene 5: call to action ---------- */}
       <section aria-label="Get started" className="mx-auto max-w-7xl px-5 pb-28 sm:px-8 lg:px-10">
         <div data-reveal className="relative overflow-hidden rounded-[2.5rem] bg-brand-900 px-8 py-16 text-center text-white shadow-lift sm:px-16">
           <div aria-hidden className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-brand-500/40 blur-3xl" />
