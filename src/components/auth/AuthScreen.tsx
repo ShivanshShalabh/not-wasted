@@ -88,7 +88,7 @@ function HeroCopy({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
           ))}
         </span>
         <Leaf className="h-4 w-4 text-sage-700" aria-hidden />
-        <span><b className="font-semibold text-ink">3</b> <span className="hidden sm:inline">community</span> partners <span aria-hidden className="mx-1 text-stone-400">•</span> 2 donors</span>
+        <span><b className="font-semibold text-ink">38</b> <span className="hidden sm:inline">community</span> partners <span aria-hidden className="mx-1 text-stone-400">•</span> <b className="font-semibold text-ink">26</b> donors</span>
       </motion.div>
 
       <h1 className="mt-8 font-display text-[3.25rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl xl:text-7xl">
