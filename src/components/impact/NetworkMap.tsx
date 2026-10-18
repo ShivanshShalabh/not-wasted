@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { toMapXY } from "@/lib/auth";
 import { Card, SectionTitle } from "../ui";
@@ -14,6 +14,7 @@ export interface ExtraPoint { id: string; name: string; lat: number; lng: number
 export function NetworkMap({ extraPoints = [], extraLabel = "EPA-listed, not yet on network" }: { extraPoints?: ExtraPoint[]; extraLabel?: string } = {}) {
   const { state } = useNotWasted();
   const donors = [...new Set(state.batches.map((b) => b.institution))];
+  const still = useReducedMotion();
   const extras = extraPoints
     .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
     .map((p) => ({ ...p, ...toMapXY(p.lat, p.lng) }))
@@ -21,12 +22,19 @@ export function NetworkMap({ extraPoints = [], extraLabel = "EPA-listed, not yet
 
   return (
     <Card>
-      <SectionTitle hint="Donor institutions and recipient organizations">Nashville network</SectionTitle>
+      <SectionTitle hint="Donors and recipients within the 5-mile match radius">Nashville network</SectionTitle>
       <svg viewBox="0 0 100 80" className="w-full rounded-2xl bg-[#fbf3ea] ring-1 ring-brand-100" role="img" aria-label="Map of donors and recipients">
         <defs>
           <radialGradient id="nw-glow" cx="52%" cy="62%" r="55%"><stop offset="0%" stopColor="#f8c9a6" stopOpacity="0.55" /><stop offset="100%" stopColor="#fbf3ea" stopOpacity="0" /></radialGradient>
         </defs>
         <rect width="100" height="80" fill="url(#nw-glow)" />
+        {/* Cumberland River and the 5-mile match zones; no donor-to-recipient lines. */}
+        <motion.path d="M0 52 C 20 40, 35 60, 55 48 S 85 30, 100 42" stroke="#b9cfbd" strokeWidth="3" strokeLinecap="round" fill="none"
+          initial={{ pathLength: still ? 1 : 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, ease: "easeOut" }} />
+        {[10, 20, 30].map((r, i) => (
+          <motion.circle key={r} cx="52" cy="52" r={r} fill="none" stroke="#e8c4a4" strokeDasharray="1 1.5" strokeWidth="0.3"
+            initial={{ opacity: 0, scale: still ? 1 : 0.6 }} animate={{ opacity: 1, scale: 1 }} style={{ transformOrigin: "52px 52px" }} transition={{ delay: 0.1 + i * 0.12, duration: 0.6 }} />
+        ))}
         {donors.map((name, i) => {
           const d = donorPos(name, i);
           return (
