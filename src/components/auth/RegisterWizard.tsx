@@ -9,6 +9,7 @@ import { CATEGORIES, CATEGORY_LIST } from "@/lib/categories";
 import { newId } from "@/lib/inventory";
 import type { AreaNeed, Category, NotifyChannel, RecipientOrg, Role } from "@/lib/types";
 import { Badge, btn, CATEGORY_STYLE, Field, inputCls } from "../ui";
+import { SampleAccounts } from "./SampleAccounts";
 
 interface Located { lat: number; lng: number; matchedAddress: string; tract: string | null }
 interface TractAccess { tract: string; lowIncomeLowAccess: boolean; lowIncome: boolean; lowAccess1Mile: boolean; povertyRate: number; medianFamilyIncome: number | null; urban: boolean }
@@ -192,9 +193,18 @@ export function RegisterWizard({ onSignIn }: { onSignIn: () => void }) {
 
   return (
     <div>
-      <button onClick={onSignIn} className="group mb-7 flex min-h-11 w-full items-center justify-between gap-3 rounded-2xl bg-brand-50/80 px-4 py-3 text-left text-sm text-brand-900 ring-1 ring-brand-100 transition hover:-translate-y-0.5 hover:shadow-card hover:ring-brand-500">
-        <span>Just exploring? <b>Use a sample donor or recipient account</b></span><ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
-      </button>
+      {step === 0 ? (
+        // Same one-click demo accounts as the sign-in screen.
+        <div className="mb-8">
+          <p className="mb-3 text-sm font-medium text-stone-700">Just exploring? Use a sample account</p>
+          <SampleAccounts onPick={(em) => { const acc = state.accounts.find((x) => x.email === em); if (acc) dispatch({ type: "LOGIN", accountId: acc.id }); }} />
+          <div className="mt-7 flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" /> or register your organization <span className="h-px flex-1 bg-stone-200" /></div>
+        </div>
+      ) : (
+        <button onClick={onSignIn} className="group mb-7 flex min-h-11 w-full items-center justify-between gap-3 rounded-2xl bg-brand-50/80 px-4 py-3 text-left text-sm text-brand-900 ring-1 ring-brand-100 transition hover:-translate-y-0.5 hover:shadow-card hover:ring-brand-500">
+          <span>Just exploring? <b>Use a sample donor or recipient account</b></span><ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+        </button>
+      )}
       <div className="mb-8 flex items-center gap-2">
         {STEPS.map((s, i) => (
           <div key={s} className="flex flex-1 items-center gap-2">

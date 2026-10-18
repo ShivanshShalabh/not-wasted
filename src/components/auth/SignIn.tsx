@@ -1,17 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Building2, ChevronDown, HandHeart } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { hashPassword } from "@/lib/auth";
-import { SAMPLE_LOGINS } from "@/lib/seed";
 import { btn, Field, inputCls } from "../ui";
+import { SAMPLE_ACCOUNTS, SampleAccounts } from "./SampleAccounts";
 
-const SAMPLES = [
-  { key: "donor" as const, icon: Building2, title: "Sample donor", org: "Vanderbilt University", ...SAMPLE_LOGINS.donor },
-  { key: "recipient" as const, icon: HandHeart, title: "Sample recipient", org: "St. Luke's Community Shelter", ...SAMPLE_LOGINS.recipient },
-];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -48,22 +44,7 @@ export function SignIn({ onRegister }: { onRegister: () => void }) {
       <p className="mt-2 text-[15px] text-stone-600">Sign in to your organization&apos;s account.</p>
 
       <p className="mt-7 mb-3 text-sm font-medium text-stone-700">Explore with a sample account</p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {SAMPLES.map(({ key, icon: Icon, title, org, email: em, password: pw }) => (
-          <motion.button key={key} whileHover={{ y: -5 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 320, damping: 20 }} disabled={typing} onClick={() => typeAndSignIn(em, pw)}
-            className="group relative overflow-hidden rounded-3xl border border-white/80 bg-white/80 p-5 text-left shadow-card ring-1 ring-stone-200/80 backdrop-blur transition-[box-shadow,ring-color] duration-300 hover:shadow-[0_18px_40px_-18px_rgb(191_83_32/0.45)] hover:ring-2 hover:ring-brand-500/70 disabled:opacity-60">
-            <span aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brand-200/0 blur-2xl transition-colors duration-500 group-hover:bg-brand-200/60" />
-            <div className="relative flex items-center justify-between">
-              <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${key === "donor" ? "bg-amber-100 text-amber-800" : "bg-sage-100 text-sage-700"}`}><Icon className="h-5 w-5" /></span>
-              <ArrowRight className="h-4 w-4 text-stone-400 transition duration-300 group-hover:translate-x-1 group-hover:text-brand-600" />
-            </div>
-            <div className="relative mt-4 text-sm font-semibold text-ink">{title}</div>
-            <div className="relative truncate text-xs text-stone-600">{org}</div>
-            <div className="relative mt-3 truncate font-mono text-xs text-stone-500">{em}</div>
-            <div className="relative font-mono text-xs text-stone-500">{pw}</div>
-          </motion.button>
-        ))}
-      </div>
+      <SampleAccounts disabled={typing} onPick={(em, pw) => void typeAndSignIn(em, pw)} />
 
       <div className="my-7 flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" /> or sign in with email <span className="h-px flex-1 bg-stone-200" /></div>
 
@@ -82,7 +63,7 @@ export function SignIn({ onRegister }: { onRegister: () => void }) {
       </button>
       {showAll && (
         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-3 grid gap-2">
-          {state.accounts.filter((a) => !SAMPLES.some((s) => s.email === a.email)).map((a) => (
+          {state.accounts.filter((a) => !SAMPLE_ACCOUNTS.some((s) => s.email === a.email)).map((a) => (
             <button key={a.id} onClick={() => dispatch({ type: "LOGIN", accountId: a.id })} className="flex min-h-11 items-center justify-between gap-3 rounded-2xl bg-white/80 px-4 py-2.5 text-left text-sm ring-1 ring-stone-200 transition hover:-translate-y-0.5 hover:shadow-card hover:ring-brand-500">
               <span className="font-medium">{a.orgName}</span><span className="truncate font-mono text-xs text-stone-500">{a.email}</span>
             </button>
