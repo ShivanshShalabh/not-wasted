@@ -20,13 +20,13 @@ export interface Filters {
 
 export const NO_FILTERS: Filters = { categories: [], transport: "all", dietary: [], fitsRequirements: false, hideQualityFlags: false };
 
-/** "Delivered to you" = the donor brings it; everything else needs the recipient (or a hub) to collect it. */
+/** "Delivery" = the donor brings it; everything else needs the recipient (or a hub) to collect it. */
 export const matchesTransport = (t: string, f: TransportFilter) => f === "all" || (f === "delivered" ? t === "Donor delivers" : t !== "Donor delivers");
 
 const TRANSPORT_OPTIONS: { value: TransportFilter; label: string }[] = [
   { value: "all", label: "Any" },
-  { value: "delivered", label: "Delivered to you" },
-  { value: "pickup", label: "Needs pickup" },
+  { value: "delivered", label: "Delivery" },
+  { value: "pickup", label: "Pickup" },
 ];
 
 const chip = (on: boolean) =>

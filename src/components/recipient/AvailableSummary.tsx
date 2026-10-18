@@ -33,8 +33,12 @@ export function AvailableSummary({ org }: { org: RecipientOrg }) {
   const checks = food.map((b) => checkDietary(b, org.requirements));
   const hasReqs = checks.some(Boolean);
   const fits = checks.filter((d) => !d?.conflicts.length).length;
-  const next = [...live].sort((a, b) => a.pickupBy - b.pickupBy)[0];
-  const urgent = !!next && next.pickupBy - now < 30 * 60_000;
+  // The org's own soonest pickup still ahead, not the network's soonest-expiring donation.
+  const next = state.claims
+    .filter((c) => c.recipientId === org.id && c.status === "CLAIMED" && c.pickupBy > now)
+    .sort((a, b) => a.pickupBy - b.pickupBy)
+    .map((c) => ({ claim: c, batch: state.batches.find((b) => b.id === c.batchId) }))[0];
+  const urgent = !!next && next.claim.pickupBy - now < 30 * 60_000;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -59,9 +63,9 @@ export function AvailableSummary({ org }: { org: RecipientOrg }) {
         )}
       </Stat>
 
-      <Stat i={2} tone={urgent ? "urgent" : "default"} icon={<Clock className={`h-4 w-4 ${urgent ? "text-red-600" : "text-brand-700"}`} />} label="Next deadline"
-        sub={next ? `${next.title} · ${next.institution}` : "Nothing pending"}>
-        <span className={`font-display text-4xl font-bold ${urgent ? "text-red-700" : next ? "text-brand-700" : "text-stone-400"}`}>{next ? countdown(next.pickupBy - now) : "—"}</span>
+      <Stat i={2} tone={urgent ? "urgent" : "default"} icon={<Clock className={`h-4 w-4 ${urgent ? "text-red-600" : "text-brand-700"}`} />} label="Next pickup deadline"
+        sub={next ? `${next.batch?.title ?? "Your pickup"} · ${next.batch?.institution ?? ""}` : "No pickups scheduled"}>
+        <span className={`font-display text-4xl font-bold ${urgent ? "text-red-700" : next ? "text-brand-700" : "text-stone-400"}`}>{next ? countdown(next.claim.pickupBy - now) : "—"}</span>
       </Stat>
     </div>
   );

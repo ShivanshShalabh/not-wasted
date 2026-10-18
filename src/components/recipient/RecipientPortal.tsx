@@ -106,8 +106,8 @@ export function RecipientPortal() {
               <div className="space-y-8">
                 <AvailableSummary org={org} />
                 <section aria-label="Your needs" className="flex flex-wrap items-start gap-3">
-                  <div className="min-w-0 flex-1 basis-[28rem]"><RequirementsCard key={org.id} org={org} /></div>
                   <DietaryNeeds value={filters} onChange={setFilters} hasRequirements={!!org.requirements?.trim()} />
+                  <div className="min-w-0 basis-full"><RequirementsCard key={org.id} org={org} /></div>
                 </section>
                 <DonationFilters value={filters} onChange={setFilters} shown={batches.length} total={visible.length}
                   categories={[...new Set(visible.map((b) => b.category))]} />

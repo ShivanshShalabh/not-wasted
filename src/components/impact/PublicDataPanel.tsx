@@ -29,10 +29,13 @@ function SourceError({ a, what, onRetry, fallback }: { a: Attempt<unknown> | und
 
 const Skeleton = ({ className = "" }: { className?: string }) => <div className={`animate-pulse rounded-2xl bg-brand-100/50 ${className}`} />;
 
+const SHORT_LIST = 6;
+
 export function PublicDataPanel() {
   const { state } = useNotWasted();
   const { data, error, loading, retry } = useEpaDirectory();
   const [invites, setInvites] = useState<Record<string, "drafting" | "drafted">>({});
+  const [showAll, setShowAll] = useState(false);
 
   const failed = (a?: Attempt<unknown>) => !!error || (a ? !a.ok : false);
   const totals = data?.totals.ok ? data.totals.data : null;
@@ -41,6 +44,9 @@ export function PublicDataPanel() {
     .sort((a, b) => Number(!!b.onNet) - Number(!!a.onNet) || a.r.name.localeCompare(b.r.name));
   const offNetwork = rows.filter((x) => !x.onNet).map((x) => x.r);
   const onCount = rows.length - offNetwork.length;
+  // Keep the list short by default; the map shows the same organizations as the list.
+  const shown = showAll ? rows : rows.slice(0, SHORT_LIST);
+  const shownOff = shown.filter((x) => !x.onNet).map((x) => x.r);
 
   const invite = (id: string) => {
     setInvites((x) => ({ ...x, [id]: "drafting" }));
@@ -85,7 +91,7 @@ export function PublicDataPanel() {
               <SourceError a={data?.recipients} what="food banks and pantries" onRetry={retry} fallback={error} />
             ) : (
               <ul className="divide-y divide-brand-100/60">
-                {rows.map(({ r, onNet }, i) => {
+                {shown.map(({ r, onNet }, i) => {
                   const inv = invites[r.id];
                   return (
                     <motion.li key={r.id} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: Math.min(i, 8) * 0.03 }}
@@ -126,13 +132,18 @@ export function PublicDataPanel() {
                 })}
               </ul>
             )}
+            {!loading && rows.length > SHORT_LIST && (
+              <button type="button" onClick={() => setShowAll(!showAll)} className={`${btn.ghost} mt-3 min-h-11`}>
+                {showAll ? "Show fewer" : <>Show all <span className="tabular">{rows.length}</span></>}
+              </button>
+            )}
           </Card>
         </motion.div>
       </div>
 
       {offNetwork.length > 0 && (
         <motion.div {...inView} className="mx-auto max-w-3xl">
-          <NetworkMap extraPoints={offNetwork} />
+          <NetworkMap extraPoints={shownOff} />
         </motion.div>
       )}
 

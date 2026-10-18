@@ -1,4 +1,4 @@
-import { AlertTriangle, Clock, Leaf, Ruler, Snowflake, Truck, Users } from "lucide-react";
+import { AlertTriangle, Clock, Flame, Leaf, Package, Ruler, Snowflake, Truck, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Category, Condition, ItemAttributes } from "@/lib/types";
 import { Badge } from "./ui";
@@ -17,12 +17,20 @@ export function Pill({ children, tone = "sage", className = "" }: { children: Re
   return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${PILL_TONE[tone]} ${className}`}>{children}</span>;
 }
 
+/** Storage pill: warm orange for hot food, cool blue for cold, neutral for shelf-stable. */
+export function StorageBadge({ storage }: { storage: string }) {
+  const [cls, Icon] = storage === "Warm/Insulated" ? ["bg-orange-50 text-orange-800 ring-orange-200", Flame]
+    : storage === "Shelf-Stable" ? ["bg-stone-100 text-stone-700 ring-stone-200", Package]
+    : ["bg-sky-50 text-sky-800 ring-sky-200", Snowflake];
+  return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${cls}`}><Icon className="h-3 w-3" /> {storage}</span>;
+}
+
 export function AttributeTags({ category, a }: { category: Category; a: ItemAttributes }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {category === "food" && (
         <>
-          {a.storage && <Badge tone="blue"><Snowflake className="h-3 w-3" /> {a.storage}</Badge>}
+          {a.storage && <StorageBadge storage={a.storage} />}
           {a.shelfLifeHours != null && <Badge tone="amber"><Clock className="h-3 w-3" /> Pick up within {a.shelfLifeHours}h</Badge>}
           {a.dietary?.map((d) => <Pill key={d}><Leaf className="h-3 w-3" /> {d}</Pill>)}
           {a.allergens?.map((d) => <Badge key={d} tone="red"><AlertTriangle className="h-3 w-3" /> Contains {d}</Badge>)}

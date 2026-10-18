@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, CheckCircle2, ChevronDown, Clock, ListOrdered, MapPinned, Minus, PackageCheck, Plus, Ruler, ShieldCheck, Snowflake, Sparkles, Truck, Users } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, Clock, ListOrdered, MapPinned, Minus, PackageCheck, Plus, Ruler, ShieldCheck, Sparkles, Truck, Users } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { CATEGORIES } from "@/lib/categories";
@@ -9,7 +9,7 @@ import { checkDietary } from "@/lib/dietary";
 import { countdown } from "@/lib/format";
 import { maxClaimable } from "@/lib/inventory";
 import type { Batch, RecipientOrg } from "@/lib/types";
-import { itemList, Pill } from "../AttributeTags";
+import { itemList, Pill, StorageBadge } from "../AttributeTags";
 import { AnimatedNumber, Badge, btn, Card, CATEGORY_STYLE, CategoryChip } from "../ui";
 import { ClaimEditor } from "./ClaimEditor";
 
@@ -45,7 +45,7 @@ function keyBadges(batch: Batch): ReactNode[] {
   const a = batch.attributes;
   const out: ReactNode[] = [];
   if (batch.category === "food") {
-    if (a.storage) out.push(<Badge key="s" tone="blue"><Snowflake className="h-3 w-3" /> {a.storage}</Badge>);
+    if (a.storage) out.push(<StorageBadge key="s" storage={a.storage} />);
     if (a.shelfLifeHours != null) out.push(<Badge key="l"><Clock className="h-3 w-3" /> Within {a.shelfLifeHours}h</Badge>);
   } else {
     if (a.condition) out.push(<Pill key="c">{a.condition}</Pill>);
