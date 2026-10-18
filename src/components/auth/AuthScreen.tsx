@@ -4,6 +4,7 @@ import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, use
 import { Apple, Armchair, ArrowLeft, ArrowRight, Clock, Leaf, Shirt, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Brand } from "../Brand";
+import { LandingStory } from "../landing/LandingStory";
 import { btn } from "../ui";
 import { RegisterWizard } from "./RegisterWizard";
 import { SignIn } from "./SignIn";
@@ -25,7 +26,11 @@ export function AuthScreen() {
     if (mode !== "hero" && window.innerWidth < 1024) panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [mode]);
 
+  // Story CTAs jump back to the top, where the form opens.
+  const start = (m: Mode) => { setMode(m); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
   return (
+    <>
     <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-5 sm:px-8 lg:px-10">
       <header className="flex items-center justify-between py-6">
         <button onClick={() => setMode("hero")} aria-label="Not Wasted home" className="rounded-2xl">
@@ -60,6 +65,8 @@ export function AuthScreen() {
         </div>
       </main>
     </div>
+    {mode === "hero" && <LandingStory onStart={() => start("signin")} onRegister={() => start("register")} />}
+    </>
   );
 }
 
