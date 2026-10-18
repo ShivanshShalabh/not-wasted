@@ -1,0 +1,82 @@
+# MASTER SPECIFICATION: HAVENGRID (B2B / ORG-TO-ORG SURPLUS EXCHANGE)
+
+You are an expert full-stack engineer and hackathon architect. Build a complete, production-polished web prototype called **HavenGrid** for the Oracle Hackathons International challenge ("From Surplus to Social Good").
+
+## 1. PRODUCT FOCUS (STRICT ORG-TO-ORG SCOPE)
+HavenGrid is strictly an **Organization-to-Organization (O2O)** platform connecting **Institutional Donors** (Universities, Corporate Campuses, Hospitals, Hotels, Conference Centers) with verified **Recipient Community Organizations** (Food Banks, Soup Kitchens, Shelters). 
+*Do NOT include individual consumer apps or street kiosks in this build.*
+
+The core workflow has 4 seamless stages:
+1. **Event Registration & Pre-Event Leftover Prediction**: Donors register an event with start/end times, **RSVP Count**, and **Food Ordered (for how many people)**. AI predicts expected surplus before the event begins.
+2. **T-Minus 45-Minute Automated Ping & AI Food Eval**: 45 minutes before the event ends, the organizer receives an automated prompt asking how much food is left over (e.g., 100 meal packets) and optionally uploads a photo for **OCI GenAI Vision** to tag allergens, shelf-life, and storage requirements.
+3. **Nearby Food Bank Notification & Partial/Split Claiming**: Nearby verified Food Banks are notified immediately. If 100 meal packets are available:
+   - A food bank can choose the exact quantity they want to claim (from 1 up to 100, capped by their available storage capacity).
+   - If Food Bank A claims all 100, `remaining_quantity` becomes `0` and the batch immediately flips to `UNAVAILABLE / FULLY CLAIMED`.
+   - If Food Bank A only claims 50, `remaining_quantity` updates live to `50`, and the remaining 50 stay `AVAILABLE` for other nearby food banks to claim until the counter hits `0`.
+4. **Pickup Manifest & Impact Reporting**: Donors see a live breakdown of which food banks claimed which quantities, verify handoffs, and generate automated ESG / Good Samaritan tax deduction reports via **Oracle Autonomous Database Select AI**.
+
+---
+
+## 2. TECH STACK
+- **Framework**: Next.js (App Router), TypeScript, Tailwind CSS, `lucide-react` icons.
+- **State & Real-Time Sync**: Shared reactive state (Context + `localStorage` + API routes) so when a judge switches between Food Bank A, Food Bank B, and the Donor view, the `remaining_quantity` progress bar updates instantaneously.
+- **OCI Architecture & Database Schema**:
+  - Service adapter in `/src/lib/oci-service.ts` supporting **OCI Generative AI (Vision & Text)** and **Oracle AI Database 26ai (Vector + Spatial SQL)** with instant local fallbacks for 100% reliable live demos.
+  - Include `/db/schema_oracle26ai.sql` showing atomic inventory decrement locks (`UPDATE surplus_batches SET remaining_qty = remaining_qty - :claim_qty WHERE batch_id = :id AND remaining_qty >= :claim_qty`), spatial proximity (`SDO_WITHIN_DISTANCE`), and vector matching.
+
+---
+
+## 3. CORE FEATURES & SCREENS TO BUILD
+
+### A. Persistent "Judge Demo Control Bar" (Top of Screen)
+Allow judges to test the entire multi-organization flow in 30 seconds without logging out:
+- **View Switcher**:
+  1. `Institutional Donor Portal` (Create Event, 45-Min Ping, Track Claims)
+  2. `Food Bank Portal` (Includes a dropdown to switch active account between **3 different nearby Food Banks** to test split-claiming!)
+  3. `Live Network Map & OCI Impact Dashboard`
+- **1-Click Demo Triggers**:
+  - `[Trigger T-45 Min Event Ping]` button (simulates the clock hitting 45 minutes before event end).
+  - `[Reset Demo Data]` button.
+
+### B. View 1: Institutional Donor Portal
+1. **Create Event Form**:
+   - Fields: Event Name, Institution Name, Address, Event Start Time, Event End Time, **Total RSVPs** (e.g., `180`), **Food Ordered (Portions/People)** (e.g., `250`), Meal Description, Storage Type (`Refrigerated` or `Warm/Insulated` or `Shelf-Stable`).
+   - **Live AI Surplus Prediction Card**: Automatically calculates predicted leftovers (`Food Ordered - Expected Attendance`, factoring in event type no-show rate and local weather) and sends a "Pre-Event Forecast" to nearby food banks so they can reserve fridge space.
+2. **The T-Minus 45-Minute Ping Modal / Banner**:
+   - When triggered (or for events within 45 mins of ending), display a prominent notification: *"45 Minutes Until Event Ends: How much food do you have left over?"*
+   - Organizer enters the confirmed leftover count (e.g., `100 Meal Packets`) and snaps/selects a photo.
+   - **AI Food Eval**: Extracts food items, dietary/allergen tags (e.g., *Halal, Vegetarian, Contains Dairy*), and safe pickup window (e.g., *Must pick up within 3 hours*).
+   - Clicking **"Broadcast 100 Meals to Nearby Food Banks"** pushes the live batch to all matching recipients within range.
+3. **Live Split-Claim Tracker (Donor View)**:
+   - Displays a visual progress bar for each active batch (e.g., `100 Total -> 50 Claimed by Downtown Pantry | 50 Still Available`).
+   - Lists each claiming Food Bank, their claimed quantity, estimated arrival time, and a `"Confirm Handoff"` button.
+
+### C. View 2: Food Bank / Recipient Organization Portal
+Include an **"Active Food Bank Switcher"** at the top of this view with at least 3 pre-seeded food banks (seeded from open-source food bank data):
+  - *Food Bank 1: Second Harvest Metro Hub* (Distance: 1.2 mi | Available Fridge Capacity: 120 meals)
+  - *Food Bank 2: Eastside Community Pantry* (Distance: 2.4 mi | Available Fridge Capacity: 55 meals)
+  - *Food Bank 3: St. Luke's Soup Kitchen* (Distance: 3.1 mi | Available Fridge Capacity: 80 meals)
+
+For each active broadcast card:
+1. **Live Inventory Badge**: Shows `100 / 100 Meal Packets Available` (or `50 / 100 Available` after a partial claim) with a green/amber progress bar.
+2. **Partial Claim Selector**:
+   - Quick-select buttons (`Claim 25`, `Claim 50`, `Claim Max Capacity`, `Claim All Remaining`) + a custom numeric slider/input from `1` to `min(remaining_qty, food_bank_available_capacity)`.
+   - Clicking **"Confirm Claim (X Meals)"** atomically deducts `X` from `remaining_qty`:
+     - If `remaining_qty > 0`, the card stays open for other food banks with the updated count.
+     - If `remaining_qty === 0`, the card locks immediately with a red/gray **`UNAVAILABLE - ALL 100 MEALS CLAIMED`** badge.
+3. **My Claimed Pickups Tab**: Shows the food bank's confirmed claims, pickup address, safe temperature window countdown, and pickup verification button.
+
+### D. View 3: OCI Architecture & ESG Impact Dashboard
+- **Live Measurable Impact Metrics**: Total Meal Packets Rescued, Pounds of Food Waste Diverted, CO2e Emissions Prevented, Estimated IRS Section 170(e)(3) Tax Deduction Value for Donors, and Average Time-to-Claim.
+- **Natural Language Impact Generator (Select AI style)**: Generates a downloadable executive sustainability summary for the donor institution and food bank network.
+- **Open-Source Food Bank Directory & Onboarding**: Table of local food banks with a `"+ Register New Food Bank"` modal.
+
+---
+
+## 4. PRE-LOADED DEMO DATA (READY ON FIRST LOAD)
+Pre-populate 3 realistic scenarios so judges can test immediately:
+1. **Event Ready for T-45 Min Ping**: *"University Engineering Career Fair"* (300 RSVPs, 400 Boxed Lunches ordered -> AI predicts ~145 leftover packets; click `"Trigger T-45m Ping"` to confirm `100 Meal Packets` and broadcast).
+2. **Active Split-Claim Batch (50 of 100 Remaining)**: *" Vanderbilt / Metro Medical Grand Rounds"* posted `100 Hot Pasta & Salad Meal Packets`. *Eastside Community Pantry* has already claimed `50`, leaving **`50 Meal Packets Available`** for the judge to claim as *St. Luke's Soup Kitchen*.
+3. **Fully Claimed Batch (0 of 80 Remaining)**: *"Corporate Tech Summit Breakfast"* (`80 Pastry & Fruit Boxes` - claimed by *Second Harvest* + *Eastside Pantry* -> shows `UNAVAILABLE / 100% CLAIMED` state).
+
+Build the entire application cleanly so `npm install && npm run dev` works immediately without errors, and generate `/db/schema_oracle26ai.sql` and `README.md`.

@@ -1,0 +1,39 @@
+
+
+Donor Profile Form
+Organization name
+
+Organization type (optional)
+
+Corporation / Workplace
+School / University
+Hospital / Healthcare
+Retailer
+Restaurant / Food service
+Other
+..
+..
+Organization location 
+
+Contact information
+
+Create password
+
+
+Recipient Profile Form
+Organization name
+
+Organization type
+
+Food pantry
+Shelter
+Community center
+Nonprofit organization
+Religious/community organization
+
+Organization location 
+
+Contact information
+
+Create password
+

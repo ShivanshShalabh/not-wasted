@@ -1,0 +1,67 @@
+#cloud-config
+write_files:
+  - path: /etc/not-wasted.env
+    permissions: "0600"
+    content: |
+      OCI_GENAI_ENABLED=true
+      OCI_AUTH=instance
+      OCI_COMPARTMENT_ID=ocid1.compartment.oc1..aaaaaaaaqbpjfsjqycva2lvlxs6pzvw4d5bmerothpmtyqdlx4mwssddhfua
+      OCI_GENAI_REGION=us-chicago-1
+      OCI_GENAI_VISION_MODEL=meta.llama-4-maverick-17b-128e-instruct-fp8
+      OCI_GENAI_TEXT_MODEL=meta.llama-3.3-70b-instruct
+      OCI_GENAI_EMBED_MODEL=cohere.embed-v4.0
+  - path: /usr/local/bin/not-wasted-fetch
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      # Downloads the latest image tarball with the VM's instance principal and loads it.
+      set -euo pipefail
+      export OCI_CLI_AUTH=instance_principal
+      oci os object get -bn not-wasted-images --name not-wasted.tar.gz --file /var/tmp/not-wasted.tar.gz
+      podman load -i /var/tmp/not-wasted.tar.gz
+      rm -f /var/tmp/not-wasted.tar.gz
+  - path: /etc/systemd/system/not-wasted.service
+    content: |
+      [Unit]
+      Description=Not Wasted app
+      Wants=network-online.target
+      After=network-online.target
+      [Service]
+      TimeoutStartSec=900
+      ExecStartPre=-/usr/bin/podman rm -f not-wasted
+      ExecStartPre=/usr/local/bin/not-wasted-fetch
+      ExecStart=/usr/bin/podman run --name not-wasted --rm -p 127.0.0.1:3000:3000 --env-file /etc/not-wasted.env us-chicago-1.ocir.io/axmy5kvwwsi6/not-wasted:latest
+      ExecStop=/usr/bin/podman stop not-wasted
+      Restart=always
+      RestartSec=15
+      [Install]
+      WantedBy=multi-user.target
+  - path: /etc/caddy/Caddyfile
+    content: |
+      147-224-193-213.sslip.io {
+        encode gzip
+        reverse_proxy 127.0.0.1:3000
+      }
+  - path: /etc/systemd/system/caddy.service
+    content: |
+      [Unit]
+      Description=Caddy HTTPS proxy
+      Wants=network-online.target
+      After=network-online.target not-wasted.service
+      [Service]
+      TimeoutStartSec=600
+      ExecStartPre=-/usr/bin/podman rm -f caddy
+      ExecStart=/usr/bin/podman run --name caddy --rm --network host -v /etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z -v caddy_data:/data docker.io/library/caddy:2.8.4
+      ExecStop=/usr/bin/podman stop caddy
+      Restart=always
+      RestartSec=15
+      [Install]
+      WantedBy=multi-user.target
+runcmd:
+  - dnf install -y podman
+  - dnf install -y python39-oci-cli || dnf install -y oci-cli
+  - firewall-cmd --permanent --add-service=http --add-service=https
+  - firewall-cmd --permanent --add-port=443/udp
+  - firewall-cmd --reload
+  - systemctl daemon-reload
+  - systemctl enable --now not-wasted.service caddy.service

@@ -1,0 +1,97 @@
+Here is my notes during the meeting
+
+
+Enable multiple organizations to register upcoming events in advance through one portal
+Develop good questions for the registration/intake form
+Free registration?
+Movement/transportation is a hard part — credits could help, or pickup could be coordinated through a hub
+Keep the process simple for donors — could large companies handle more of the process?
+Define the timeline — recipients need some predictability
+Define categories of items
+Intake form: How? Where?
+Visual evaluation and predictability
+Claim vs. pickup — need a defined time window
+Corporate vs. school donors — separate approaches?
+Affiliate with existing organizations rather than building a food bank
+Pitch: social good through technology / use of OCI services
+Focus + future extensions (e.g., kiosk, end-user accessibility)
+Focus initially on food, with the possibility of expanding to other surplus items (furniture, clothes, etc.)
+Platform flow
+
+Identify user type first: donor or recipient
+Notifications for recipients — how? Phone, email, etc.
+Donor enters event information — e.g., corporate facilities team collaborating with the event host team
+Manually update any changes in quantity (e.g., one hour before pickup) for transparency
+Recipient claims the surplus — potentially first come, first served
+Allow cancellation of a claim
+Pickup within a defined time window
+Pitch
+
+Pain points
+How we solve them
+How the solution could evolve to the next level
+Prototype
+
+Focus on food
+Keep it as simple as possible
+Intake form
+Later: add prediction and expand to other types of surplus
+KPIs
+
+Measurable outcomes
+Ease of use
+Failed/fell-through claims or pickups
+Friction in the process
+Maintenance / sustainability
+=============
+
+My notes:
+Notes from mentoring session with Jay @1pm : 
+
+surplus from where? Events, organizations
+Specific to Nashville (local general public) 
+need to advertise/letting companies know about the app 
+1st step: create the portal (many/all companies can register, and register their event) 
+subscription based? 
+as of right, start as nonprofit 
+
+what questions 
+Movement part is the hard part —> needs to be done by the larger organizations. 
+2 options: hub themselves, or the donation organization
+
+claiming is different, picking up is different
+we need to set rules: need to pick up by … time etc 
+we cant allow individuals to register in our portal. That will be a mess
+start with focusing food, then expand.
+manual process first, then prediction comes in later based on app data 
+1 hour in advance minumum
+goes by first come, first serve?? event staff has to update about how much items have left etc 
+
+
+what do we need to ask:
+
+first thing to ask: Donator OR Recipient, then intake form 
+location 
+event history 
+pickup window/transportation 
+contact information, how to notify? 
+
+
+Important question: How to encourage companies/organizations to put their event info into our portal??
+
+event host —> let facilities team know —> (plan transportation internally)
+doesnt have to be 1 account for 1 organization, multiple different departments, orgs within the big organizatio
+KPI: How many food has transferred to the recienpt
+How easy was the process 
+How many fell thru 
+How quickly we fix the problem
+
+
+
+
+Presentation:
+
+3,4 pain points + how we are solving + how we can take it to the next level?
+food only 
+keep it simple 
+	•		•	focus on the cause (why we are doing it)
