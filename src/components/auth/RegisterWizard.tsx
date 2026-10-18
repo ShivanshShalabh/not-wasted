@@ -273,22 +273,8 @@ export function RegisterWizard({ onSignIn }: { onSignIn: () => void }) {
                           </div>
                         </div>
                       </div>
-                      {role === "recipient" && (lookup.access ? (
-                        lookup.access.lowIncomeLowAccess ? (
-                          <div className="flex items-start gap-2 rounded-2xl bg-brand-50 px-3.5 py-2.5 text-sm text-brand-900 ring-1 ring-brand-200">
-                            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                            <span><b>Low-income, low-access tract</b> — you&apos;ll be prioritized in donor matching. <span className="text-brand-700">Poverty rate <span className="tabular">{lookup.access.povertyRate}%</span>.</span></span>
-                          </div>
-                        ) : (
-                          <div className="flex items-start gap-2 rounded-2xl bg-stone-50 px-3.5 py-2.5 text-sm text-stone-700 ring-1 ring-stone-200">
-                            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-stone-500" />
-                            <span>Poverty rate <b className="tabular">{lookup.access.povertyRate}%</b> in your tract{lookup.access.lowIncome ? " (USDA low-income tract)" : ""}. Higher-need areas get a boost when donors are matched.</span>
-                          </div>
-                        )
-                      ) : lookup.accessError ? <p className="text-xs text-amber-700">{lookup.accessError}</p> : null)}
                       <div className="flex flex-wrap gap-x-3 gap-y-1">
                         <SourceLabel>{lookup.geoSource}</SourceLabel>
-                        {role === "recipient" && lookup.accessSource && <SourceLabel>{lookup.accessSource} (2019)</SourceLabel>}
                       </div>
                     </div>
                   </motion.div>

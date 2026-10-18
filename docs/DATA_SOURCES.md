@@ -6,8 +6,8 @@ Every call goes through the server (`src/lib/public-data/`). Responses are cache
 
 | Dataset | Publisher | What we use it for | Where in the app | Key? |
 |---|---|---|---|---|
-| [Excess Food Opportunities Map](https://www.epa.gov/sustainable-management-food/excess-food-opportunities-map) | U.S. EPA | Real Nashville food banks, pantries and soup kitchens; schools and universities with estimated excess food (tons/year) | Network impact → Nashville at a glance; Outreach agent prospects | No |
-| [Food Access Research Atlas](https://www.ers.usda.gov/data-products/food-access-research-atlas/) (2019) | USDA Economic Research Service | Whether a recipient's census tract is low-income / low-access, and its poverty rate | Recipient "area need" badge; matching boost; registration | No |
+| [Excess Food Opportunities Map](https://www.epa.gov/sustainable-management-food/excess-food-opportunities-map) | U.S. EPA | Real Nashville food banks, pantries and soup kitchens; county total of estimated excess food from schools and universities (tons/year) | Network impact → Nashville at a glance; Outreach agent prospects | No |
+| [Food Access Research Atlas](https://www.ers.usda.gov/data-products/food-access-research-atlas/) (2019) | USDA Economic Research Service | Whether a recipient's census tract is low-income / low-access, and its poverty rate | Stored with each recipient's location; not used for matching or shown in the app | No |
 | [Census Geocoder](https://geocoding.geo.census.gov/geocoder/) | U.S. Census Bureau | Address → coordinates and census tract | Registration; area need; geocoding event venues | No |
 | [Open-Meteo Forecast API](https://open-meteo.com/) | Open-Meteo | Event-day weather, which adjusts the leftover forecast | Register event form; Outreach agent forecasts | No |
 | [Open Food Facts](https://world.openfoodfacts.org/) | Open Food Facts | Barcode → product name, allergens, diet labels | Post surplus → barcode | No |
@@ -35,7 +35,7 @@ Every call goes through the server (`src/lib/public-data/`). Responses are cache
   - +0.5 when the tract is low-income and low-access.
   - +0.2 when it is low-income.
   - Plus up to 0.3 from the poverty rate.
-- **Effect on matching:** a recipient's match score goes up by as much as 8 points (`src/lib/matching.ts`). The reason shown is "Serves a USDA low-income, low-access tract" or "High-need area (x% poverty)".
+- **Effect on matching:** none. Ranking on neighborhood poverty gave some recipients an advantage over others, so matching uses only capacity, distance, needs, handling and dietary fit.
 - **Code:** `src/lib/public-data/foodAccess.ts`, `GET /api/data/locate`, and `src/components/useAreaNeeds.ts`.
 
 ### U.S. Census Geocoder

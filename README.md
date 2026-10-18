@@ -104,7 +104,7 @@ Each one is also a JSON endpoint under `/api/agents` and shows its reasoning ste
 The app pulls seven free public datasets live, on the server, and falls back gracefully if one is down:
 
 - **EPA Excess Food Opportunities Map:** real Nashville food banks and pantries, plus schools with estimated excess food.
-- **USDA Food Access Research Atlas:** low-income and low-access census tracts. Matching gives recipients there a boost.
+- **USDA Food Access Research Atlas:** low-income and low-access census tracts. Stored with recipient locations; not used for matching.
 - **U.S. Census Geocoder:** addresses to coordinates and census tracts.
 - **Open-Meteo:** event-day weather, which adjusts the leftover forecast.
 - **Open Food Facts:** barcode lookup for allergens and diet labels.

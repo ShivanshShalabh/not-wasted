@@ -124,14 +124,14 @@ describe("dietary filters", () => {
 });
 
 describe("area need", () => {
-  it("lifts a recipient in a low-income, low-access tract and says why", () => {
+  it("does not rank recipients by neighborhood poverty", () => {
     const base = s().recipients;
     const input = { category: "food" as const, title: "Sandwich platters", qty: 30, attributes: { items: ["sandwiches"] } };
     const before = matchRecipients(input, base).find((m) => m.recipient.id === "rcp_eastside")!;
     const st = reducer(s(), { type: "SET_AREA", areas: { rcp_eastside: { tract: "47037011900", need: 1, lowIncomeLowAccess: true, povertyRate: 41 } } });
     const after = matchRecipients(input, st.recipients).find((m) => m.recipient.id === "rcp_eastside")!;
-    expect(after.score).toBe(Math.min(100, before.score + 8));
-    expect(after.reasons.join(" ")).toMatch(/low-income, low-access/);
+    expect(after.score).toBe(before.score);
+    expect(after.reasons.join(" ")).not.toMatch(/poverty|low-income/);
   });
 });
 

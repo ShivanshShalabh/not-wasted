@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, BadgeCheck, BookOpen, Check, Database, ExternalLink, GraduationCap, HandHeart, Loader2, MapPin, RefreshCw, UserPlus } from "lucide-react";
+import { AlertTriangle, BadgeCheck, BookOpen, Check, Database, ExternalLink, HandHeart, Loader2, MapPin, RefreshCw, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNotWasted } from "@/context/NotWastedContext";
 import { AnimatedNumber, Badge, btn, Card, SectionTitle } from "../ui";
@@ -37,8 +37,6 @@ export function PublicDataPanel() {
   const failed = (a?: Attempt<unknown>) => !!error || (a ? !a.ok : false);
   const totals = data?.totals.ok ? data.totals.data : null;
   const recipients = data?.recipients.ok ? data.recipients.data : [];
-  const schools = data?.schools.ok ? data.schools.data.slice(0, 10) : [];
-  const maxTons = Math.max(1, ...schools.map((s) => s.excessTonsHigh));
   const rows = recipients.map((r) => ({ r, onNet: findOnNetwork(r.name, state.recipients) }))
     .sort((a, b) => Number(!!b.onNet) - Number(!!a.onNet) || a.r.name.localeCompare(b.r.name));
   const offNetwork = rows.filter((x) => !x.onNet).map((x) => x.r);
@@ -74,9 +72,9 @@ export function PublicDataPanel() {
         )}
       </motion.div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-5">
+      <div>
         {/* Food banks & pantries */}
-        <motion.div {...inView} className="lg:col-span-3">
+        <motion.div {...inView}>
           <Card>
             <SectionTitle hint={<>{EPA_SOURCE} · {loading ? "loading…" : <><span className="tabular">{onCount}</span> on Not Wasted, <span className="tabular">{offNetwork.length}</span> not yet</>}</>}>
               <span className="flex items-center gap-2"><HandHeart className="h-5 w-5 text-brand-600" /> Food banks &amp; pantries in Davidson County</span>
@@ -127,46 +125,6 @@ export function PublicDataPanel() {
                   );
                 })}
               </ul>
-            )}
-          </Card>
-        </motion.div>
-
-        {/* Biggest generators */}
-        <motion.div {...inView} className="lg:col-span-2">
-          <Card>
-            <SectionTitle hint="Estimated excess food, tons per year (EPA low–high)">
-              <span className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-brand-600" /> Biggest excess-food generators</span>
-            </SectionTitle>
-            {loading ? (
-              <div className="space-y-4">{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}</div>
-            ) : failed(data?.schools) ? (
-              <SourceError a={data?.schools} what="school excess-food estimates" onRetry={retry} fallback={error} />
-            ) : (
-              <ol className="space-y-4">
-                {schools.map((s, i) => (
-                  <li key={s.id} className="group -mx-2 rounded-2xl px-2 py-1.5 transition duration-300 hover:-translate-y-0.5 hover:bg-brand-50/50">
-                    <div className="flex items-start justify-between gap-3 text-sm">
-                      <div className="min-w-0">
-                        {s.website ? (
-                          <a href={s.website} target="_blank" rel="noreferrer" className="font-medium text-ink underline-offset-4 hover:text-brand-700 hover:underline">{s.name}</a>
-                        ) : <span className="font-medium text-ink">{s.name}</span>}
-                        <div className="truncate text-xs text-stone-500">{fullAddress(s)}</div>
-                      </div>
-                      <span className="shrink-0 text-xs text-stone-500 tabular"><b className="font-semibold text-ink">{Math.round(s.excessTonsLow).toLocaleString()}–{Math.round(s.excessTonsHigh).toLocaleString()}</b> t/yr</span>
-                    </div>
-                    <div className="relative mt-2 h-2.5 overflow-hidden rounded-full bg-brand-100/50">
-                      <motion.div className="absolute inset-0 origin-left rounded-full bg-brand-200" initial={{ scaleX: 0 }} whileInView={{ scaleX: s.excessTonsHigh / maxTons }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 90, damping: 18, delay: 0.1 + i * 0.05 }} />
-                      <motion.div className="absolute inset-0 origin-left rounded-full bg-gradient-to-r from-brand-500 to-brand-600" initial={{ scaleX: 0 }} whileInView={{ scaleX: s.excessTonsLow / maxTons }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 90, damping: 18, delay: 0.2 + i * 0.05 }} />
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-            {!loading && schools.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1 border-t border-stone-100 pt-4 text-xs text-stone-500">
-                <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-brand-600" /> Low estimate</span>
-                <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-brand-200" /> High estimate</span>
-              </div>
             )}
           </Card>
         </motion.div>

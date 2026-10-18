@@ -11,7 +11,6 @@ import type { AssistantDonation } from "@/lib/oci-service";
 import type { Batch } from "@/lib/types";
 import { btn, EmptyState, GettingStarted, MotionList, PageHeader, Tabs } from "../ui";
 import { useSemanticScores } from "../useSemanticScores";
-import { AreaNeedPill } from "./AreaNeedPill";
 import { AssistantPanel } from "./AssistantPanel";
 import { AvailableSummary } from "./AvailableSummary";
 import { CapacityEditor } from "./CapacityEditor";
@@ -74,8 +73,7 @@ export function RecipientPortal() {
         eyebrow="Recipient portal"
         title={org.name}
         accent="Today's rescue."
-        description={<>{org.type} · <span className="tabular">{org.distanceMi}</span> mi away · we&apos;ll notify you by {org.notifyChannel.toLowerCase() === "sms" ? "text" : "email"}
-          {org.area && <span className="mt-3 flex"><AreaNeedPill area={org.area} /></span>}</>}
+        description={<>Donations that fit your needs and capacity, best match first. We&apos;ll {org.notifyChannel.toLowerCase() === "sms" ? "text" : "email"} you when a new one is posted.</>}
         actions={<CapacityEditor org={org} />}
       />
 

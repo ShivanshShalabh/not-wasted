@@ -79,11 +79,7 @@ export function matchRecipients(input: MatchInput, recipients: RecipientOrg[], r
         reasons.push(diet.conflicts[0]);
       } else if (diet?.ok.length) reasons.push(`Meets ${diet.ok.slice(0, 2).join(", ").toLowerCase()}`);
 
-      const equity = r.area ? 8 * r.area.need : 0;
-      if (r.area?.lowIncomeLowAccess) reasons.push("Serves a USDA low-income, low-access tract");
-      else if (r.area && r.area.need >= 0.3) reasons.push(`High-need area (${r.area.povertyRate}% poverty)`);
-
-      return { recipient: r, score: Math.min(100, Math.round(capScore + distScore + needScore + handling + equity)), reasons, fitsQty, semantic: sim };
+      return { recipient: r, score: Math.min(100, Math.round(capScore + distScore + needScore + handling)), reasons, fitsQty, semantic: sim };
     })
     .sort((x, y) => y.score - x.score);
 }
