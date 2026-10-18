@@ -10,6 +10,7 @@ import { AttributeTags, itemList } from "../AttributeTags";
 import { PhotoPicker } from "../PhotoPicker";
 import { AiSourceBadge, btn, Field, inputCls, Modal } from "../ui";
 import { useEvaluate } from "../useEvaluate";
+import { needsQualityConfirm, QualityConfirm } from "./QualityConfirm";
 
 export function T45PingModal({ event }: { event: DonorEvent }) {
   const { state, dispatch, now } = useNotWasted();
@@ -19,7 +20,16 @@ export function T45PingModal({ event }: { event: DonorEvent }) {
   const { result, loading, evaluate } = useEvaluate();
   const close = () => dispatch({ type: "CLOSE_PING" });
 
+  const [confirming, setConfirming] = useState(false);
+  // Flagged by the quality check: ask the donor to confirm before sharing.
+  async function share() {
+    const ev = result ?? (await evaluate("food", description, photo));
+    if (needsQualityConfirm(ev.quality)) return setConfirming(true);
+    await broadcast();
+  }
+
   async function broadcast() {
+    setConfirming(false);
     const ev = result ?? (await evaluate("food", description, photo));
     const postedAt = Date.now();
     dispatch({
@@ -28,7 +38,7 @@ export function T45PingModal({ event }: { event: DonorEvent }) {
         id: newId("bat"), category: "food", title: ev.title, institution: event.institution, department: event.department,
         address: event.address, eventId: event.id, totalQty: qty, remainingQty: qty, status: "AVAILABLE",
         attributes: { storage: event.storage, ...ev.attributes }, transport: event.transport, postedAt,
-        pickupBy: Math.max(event.end, postedAt) + ev.pickupWindowHours * 3600_000, aiSource: ev.source,
+        pickupBy: Math.max(event.end, postedAt) + ev.pickupWindowHours * 3600_000, aiSource: ev.source, quality: ev.quality,
         photo: photo ? await photoThumbnail(photo) : undefined,
       },
     });
@@ -70,10 +80,11 @@ export function T45PingModal({ event }: { event: DonorEvent }) {
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-5">
         <div className="text-sm text-stone-500">{event.transport === "Donor delivers" ? "You'll deliver it" : "A food bank will pick it up"}</div>
-        <button className={btn.primary} disabled={loading} onClick={broadcast}>
+        <button className={btn.primary} disabled={loading} onClick={() => void share()}>
           <Radio className="h-4 w-4" /> Share {qty} leftover meals
         </button>
       </div>
+      <QualityConfirm quality={result?.quality} open={confirming} onCancel={() => setConfirming(false)} onConfirm={() => void broadcast()} />
     </Modal>
   );
 }

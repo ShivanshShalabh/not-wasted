@@ -13,6 +13,7 @@ import { ALLERGEN_OPTIONS, CONDITION_OPTIONS, DIETARY_OPTIONS, itemKey, itemList
 import { Dropzone } from "../Dropzone";
 import { AiSourceBadge, Badge, btn, CATEGORY_STYLE, CategoryChip, Field, inputCls } from "../ui";
 import { useEvaluate, type Evaluation } from "../useEvaluate";
+import { needsQualityConfirm, QualityConfirm } from "./QualityConfirm";
 
 const QUALITY_STYLE: Record<QualityVerdict, { cls: string; icon: typeof CheckCircle2 }> = {
   "Good to donate": { cls: "bg-sage-100/80 text-[#2f6b3d] ring-sage-500/40", icon: CheckCircle2 },
@@ -243,7 +244,7 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
   const [title, setTitle] = useState("");
   const [attrs, setAttrs] = useState<ItemAttributes>({});
   const [itemsText, setItemsText] = useState("");
-  const [safeAck, setSafeAck] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [productImage, setProductImage] = useState<string | null>(null);
   const [qty, setQty] = useState<number | "">("");
@@ -267,7 +268,7 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
     setTitle(ev.title);
     setAttrs(ev.attributes);
     setItemsText(itemList(ev.category, ev.attributes).join(", "));
-    setSafeAck(false);
+    setConfirming(false);
     if (ev.estimatedQty && ev.estimatedQty > 0) setQty(Math.round(ev.estimatedQty));
   }
 
@@ -296,9 +297,17 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
     void run(c, photo, hint || itemsText);
   }
 
-  async function broadcast(e: React.FormEvent) {
+  function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!scan || !qty || !pickup.transport || (blocked && !safeAck)) return;
+    if (!scan || !qty || !pickup.transport) return;
+    // Flagged by the quality check (spoiled, damaged, questionable): ask before posting.
+    if (needsQualityConfirm(scan.quality)) return setConfirming(true);
+    void broadcast();
+  }
+
+  async function broadcast() {
+    setConfirming(false);
+    if (!scan || !qty || !pickup.transport) return;
     const postedAt = Date.now();
     // Recipients see the donor's own photo; packaged-product images from Open Food Facts are not stored.
     const thumb = photo ? await photoThumbnail(photo) : undefined;
@@ -312,8 +321,7 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
     onDone();
   }
 
-  const blocked = scan?.quality?.verdict === "Not suitable";
-  const reset = () => { setScan(null); setPhoto(null); setProductImage(null); setQty(""); setHint(""); setAttrs({}); setItemsText(""); setSafeAck(false); };
+  const reset = () => { setScan(null); setPhoto(null); setProductImage(null); setQty(""); setHint(""); setAttrs({}); setItemsText(""); };
 
   if (!scan) {
     return (
@@ -358,7 +366,7 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
   const n = typeof qty === "number" ? qty : 0;
 
   return (
-    <motion.form initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} onSubmit={broadcast} className="space-y-6">
+    <motion.form initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} onSubmit={submit} className="space-y-6">
       {scan.quality && (() => {
         const q = QUALITY_STYLE[scan.quality.verdict] ?? QUALITY_STYLE["Check before pickup"];
         const Icon = q.icon;
@@ -472,17 +480,11 @@ export function PostSurplusForm({ onDone }: { onDone: () => void }) {
         </AnimatePresence>
       </div>
 
-      {blocked && (
-        <label className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
-          <input type="checkbox" className="mt-0.5 accent-red-600" checked={safeAck} onChange={(e) => setSafeAck(e.target.checked)} />
-          I&apos;ve checked these items and they&apos;re safe to donate
-        </label>
-      )}
-
       <div className="flex gap-2">
         <button type="button" className={btn.ghost} onClick={reset}><RotateCcw className="h-4 w-4" /> Rescan</button>
-        <button type="submit" disabled={!n || loading || !pickup.transport || (blocked && !safeAck)} className={`${btn.primary} flex-1`}><Radio className="h-4 w-4" /> Post donation</button>
+        <button type="submit" disabled={!n || loading || !pickup.transport} className={`${btn.primary} flex-1`}><Radio className="h-4 w-4" /> Post donation</button>
       </div>
+      <QualityConfirm quality={scan.quality} open={confirming} onCancel={() => setConfirming(false)} onConfirm={() => void broadcast()} />
     </motion.form>
   );
 }
