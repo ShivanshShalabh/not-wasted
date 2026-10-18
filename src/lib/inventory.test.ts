@@ -21,17 +21,17 @@ describe("split claiming", () => {
 
   it("rejects over-remaining, over-capacity and unaccepted category", () => {
     expect(claimBatch(s(), "bat_grand_rounds", "rcp_second_harvest", 51, 1).error).toMatch(/Only 50 left/);
-    expect(claimBatch(s(), "bat_hotel_linen", "rcp_st_lukes", 151, 1).error).toMatch(/capacity/);
+    expect(claimBatch(s(), "bat_hotel_linen", "rcp_st_lukes", 101, 1).error).toMatch(/capacity/);
     expect(claimBatch(s(), "bat_office_reno", "rcp_eastside", 1, 1).error).toMatch(/does not accept/);
   });
 
   it("furniture claim only touches furniture capacity; cancel restores", () => {
-    const claimed = claimBatch(s(), "bat_office_reno", "rcp_music_city_furniture", 25, 1).state;
-    expect(cap(claimed, "rcp_music_city_furniture")).toEqual({ furniture: 35, other: 40 });
+    const claimed = claimBatch(s(), "bat_office_reno", "rcp_st_lukes", 25, 1).state;
+    expect(cap(claimed, "rcp_st_lukes")).toEqual({ food: 80, clothing: 100, furniture: 5 });
     const id = claimed.claims.at(-1)!.id;
     const undone = cancelClaim(claimed, id).state;
     expect(batch(undone, "bat_office_reno")).toMatchObject({ remainingQty: 25, status: "AVAILABLE" });
-    expect(cap(undone, "rcp_music_city_furniture").furniture).toBe(60);
+    expect(cap(undone, "rcp_st_lukes").furniture).toBe(30);
   });
 
   it("quantity update cannot drop below claimed", () => {
@@ -45,7 +45,7 @@ import { matchRecipients } from "./matching";
 describe("matching", () => {
   it("ranks furniture needing a truck toward the furniture bank with a truck", () => {
     const m = matchRecipients({ category: "furniture", title: "Office chairs", qty: 20, attributes: { itemTypes: ["chairs"], needsTruck: true } }, s().recipients);
-    expect(m[0].recipient.id).toBe("rcp_music_city_furniture");
+    expect(m[0].recipient.id).toBe("rcp_st_lukes");
     expect(m.every((x) => x.recipient.acceptedCategories.includes("furniture"))).toBe(true);
   });
 });
@@ -139,8 +139,8 @@ import { setCapacity, updateClaim } from "./inventory";
 
 describe("capacity and claim edits", () => {
   it("lets a recipient set capacity for categories it accepts only", () => {
-    const st = setCapacity(s(), "rcp_st_lukes", { food: 120, furniture: 9 }).state;
-    expect(cap(st, "rcp_st_lukes")).toEqual({ food: 120, clothing: 150 });
+    const st = setCapacity(s(), "rcp_st_lukes", { food: 120, other: 9 }).state;
+    expect(cap(st, "rcp_st_lukes")).toEqual({ food: 120, clothing: 100, furniture: 30 });
     expect(setCapacity(s(), "rcp_st_lukes", { food: -1 }).error).toMatch(/0 or more/);
   });
 
@@ -173,7 +173,9 @@ describe("impact and deductions", () => {
     const all = computeImpact(s(), 1_000_000);
     const eastside = computeImpact(s(), 1_000_000, { recipientId: "rcp_eastside" });
     expect(eastside.totalItems).toBe(80); // 50 pasta + 30 pastry
-    expect(computeImpact(s(), 1_000_000, { donor: "Vanderbilt University" }).totalItems).toBe(all.totalItems);
+    const byDonor = (donor: string) => computeImpact(s(), 1_000_000, { donor }).totalItems;
+    expect(byDonor("Vanderbilt University") + byDonor("Oracle")).toBe(all.totalItems);
+    expect(byDonor("Oracle")).toBe(95); // 80 pastry boxes + 15 chairs
     expect(computeImpact(s(), 1_000_000, { donor: "Belmont University" }).totalItems).toBe(0);
   });
 });

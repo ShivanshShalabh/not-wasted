@@ -10,7 +10,7 @@ import { btn, Field, inputCls } from "../ui";
 
 const SAMPLES = [
   { key: "donor" as const, icon: Building2, title: "Sample donor", org: "Vanderbilt University", ...SAMPLE_LOGINS.donor },
-  { key: "recipient" as const, icon: HandHeart, title: "Sample recipient", org: "St. Luke's Soup Kitchen", ...SAMPLE_LOGINS.recipient },
+  { key: "recipient" as const, icon: HandHeart, title: "Sample recipient", org: "St. Luke's Community Shelter", ...SAMPLE_LOGINS.recipient },
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -78,7 +78,7 @@ export function SignIn({ onRegister }: { onRegister: () => void }) {
       </p>
 
       <button onClick={() => setShowAll(!showAll)} className="mx-auto mt-4 flex min-h-11 items-center gap-1 rounded-full px-3 text-xs font-medium text-stone-500 transition hover:bg-brand-50 hover:text-brand-700">
-        Other demo recipients (for split-claim testing) <motion.span animate={{ rotate: showAll ? 180 : 0 }}><ChevronDown className="h-3.5 w-3.5" /></motion.span>
+        Other demo accounts (Oracle, food banks) <motion.span animate={{ rotate: showAll ? 180 : 0 }}><ChevronDown className="h-3.5 w-3.5" /></motion.span>
       </button>
       {showAll && (
         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-3 grid gap-2">

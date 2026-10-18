@@ -74,6 +74,7 @@ const PARTNERS = [
   { i: "SH", c: "bg-brand-100 text-brand-700" },
   { i: "SL", c: "bg-sage-100 text-sage-700" },
   { i: "VU", c: "bg-amber-100 text-amber-800" },
+  { i: "OR", c: "bg-red-100 text-red-800" },
 ];
 
 function HeroCopy({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) {
@@ -87,7 +88,7 @@ function HeroCopy({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
           ))}
         </span>
         <Leaf className="h-4 w-4 text-sage-700" aria-hidden />
-        <span><b className="font-semibold text-ink">5</b> <span className="hidden sm:inline">community</span> partners <span aria-hidden className="mx-1 text-stone-400">•</span> 1 university</span>
+        <span><b className="font-semibold text-ink">3</b> <span className="hidden sm:inline">community</span> partners <span aria-hidden className="mx-1 text-stone-400">•</span> 2 donors</span>
       </motion.div>
 
       <h1 className="mt-8 font-display text-[3.25rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl xl:text-7xl">
@@ -123,11 +124,11 @@ const PREVIEWS: Preview[][] = [
   [
     { icon: Apple, tile: "bg-sage-100 text-sage-700", title: "Hot pasta & salad", meta: "Rand Dining Hall", h: "min-h-48",
       body: <><Stat k="50" v="meals" /><Pill><Clock className="h-3 w-3" /> 2h 34m left</Pill></> },
-    { icon: Shirt, tile: "bg-sky-100 text-sky-800", title: "Winter coats", meta: "Hope Threads", h: "min-h-60",
+    { icon: Shirt, tile: "bg-sky-100 text-sky-800", title: "Towels & linens", meta: "Vanderbilt Housing", h: "min-h-60",
       body: <><Stat k="200" v="items" /><Bar pct={64} /><span className="text-xs text-stone-600">128 claimed · 72 left</span></> },
   ],
   [
-    { icon: Armchair, tile: "bg-amber-100 text-amber-800", title: "Office chairs", meta: "Vanderbilt facilities", h: "min-h-56",
+    { icon: Armchair, tile: "bg-amber-100 text-amber-800", title: "Office chairs", meta: "Oracle campus", h: "min-h-56",
       body: <><Stat k="25" v="pieces" /><Pill tone="brand">Pickup by Fri</Pill></> },
     // What a food bank sees: a new donation ranked against its needs.
     { icon: Sparkles, tile: "bg-brand-100 text-brand-700", title: "Matched for you", meta: "Produce boxes · Belmont Dining", h: "min-h-48",

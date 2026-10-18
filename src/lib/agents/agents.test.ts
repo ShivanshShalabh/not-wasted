@@ -21,7 +21,7 @@ describe("pickup rescue", () => {
     st = { ...st, claims: st.claims.map((c) => (c.id === "clm_seed_1" ? { ...c, pickupBy: NOW + 10 * 60_000 } : c)) };
     const { cases } = planRescue(st, NOW);
     expect(cases).toHaveLength(1);
-    expect(cases[0]).toMatchObject({ plan: "waitlist", minutesLeft: 10, waitlistNext: { name: "St. Luke's Soup Kitchen", qty: 40 } });
+    expect(cases[0]).toMatchObject({ plan: "waitlist", minutesLeft: 10, waitlistNext: { name: "St. Luke's Community Shelter", qty: 40 } });
     expect(cases[0].rematch.every((m) => m.recipientId !== "rcp_eastside")).toBe(true);
   });
 

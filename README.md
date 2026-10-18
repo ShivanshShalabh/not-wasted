@@ -44,14 +44,15 @@ On first visit, the app opens on **registration**: choose Donor or Recipient, th
 | Account | Email | Password |
 |---|---|---|
 | Sample donor (Vanderbilt University) | `donor@notwasted.org` | `demo1234` |
-| Sample recipient (St. Luke's Soup Kitchen) | `recipient@notwasted.org` | `demo1234` |
-| Other recipients | `secondharvest@`, `eastside@`, `furniture@`, `hopethreads@notwasted.org` | `demo1234` | The account menu (top right) switches accounts or signs out.
+| Second donor (Oracle) | `oracle@notwasted.org` | `demo1234` |
+| Sample recipient (St. Luke's Community Shelter) | `recipient@notwasted.org` | `demo1234` |
+| Food banks (Second Harvest, Eastside) | `secondharvest@`, `eastside@notwasted.org` | `demo1234` | The account menu (top right) switches accounts or signs out.
 
-1. Sign in as **St. Luke's Soup Kitchen**. On *Hot Pasta & Salad* (50 / 100 left), click **Claim**, then **All (50)**, then **Confirm**. The card locks.
+1. Sign in as **St. Luke's Community Shelter**. On *Hot Pasta & Salad* (50 / 100 left), click **Claim**, then **All (50)**, then **Confirm**. The card locks.
 2. Switch to **Vanderbilt University** (donor). Click **T-45 Ping**, confirm `100`, then **Broadcast**. The top food-bank matches are listed.
 3. Switch to *Second Harvest* and claim 50. Switch to *Eastside*: the claim is capped by its free space.
 4. Back as **Vanderbilt University**, the Grand Rounds card shows the live split. Open **Manage pickups**, then **Confirm handoff**.
-5. As Vanderbilt, click **Post surplus** and drop a photo, for example `chairs.jpg`. Enter `30`. Music City Furniture Bank shows as the top match.
+5. As Vanderbilt, click **Post surplus** and drop a photo, for example `chairs.jpg`. Enter `30`. St. Luke's Community Shelter (it furnishes transitional-housing rooms) shows as the top match.
 6. **Network impact**: tap the tax-deduction number to see how it was estimated, then open **Impact report** and press **Run report agent** (or **Generate report**). The OCI architecture view lives in the agent console at `/agents`.
 7. Use **Reset demo data** in the account menu.
 
@@ -143,6 +144,6 @@ Run `db/schema_oracle26ai.sql` in Autonomous Database (26ai) via Database Action
 - Accessibility kiosks and end-user access (deliberately out of scope for v1, which is org-to-org only)
 
 ## Notes
-- Recipient seed data is modeled on public food-bank listings. *Music City Furniture Bank* and *Hope Threads Clothing Closet* are fictional demo orgs.
+- Demo data has two donors (Vanderbilt University and Oracle) and three recipients: two food banks and a shelter. The recipients are fictional demo orgs modeled on public listings, and Oracle's demo events and donations are illustrative.
 - Tax and CO2e figures are estimates for demonstration only. They are not tax advice.
 - The Outreach agent's event feed is simulated. Its weather and venue geocoding are real public data (see docs/DATA_SOURCES.md).
