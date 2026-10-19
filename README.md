@@ -8,7 +8,7 @@ Built for the Oracle Hackathons International challenge *"From Surplus to Social
 ## Team Oracle of Plenty — HackTN 2026
 
 **🥇 1st In Challenge Track  
-🥈 2nd Overall.**
+🥈 2nd Overall**
 
 ![Team Oracle of Plenty at HackTN 2026](assets/HackTN_OracleOfPlenty.jpg)
 
