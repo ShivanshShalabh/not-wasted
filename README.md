@@ -5,6 +5,15 @@
 
 Built for the Oracle Hackathons International challenge *"From Surplus to Social Good"*, starting in Nashville.
 
+## Team Oracle of Plenty — HackTN 2026
+
+**🥇 1st In Challenge Track  
+🥈 2nd Overall.**
+
+![Team Oracle of Plenty at HackTN 2026](assets/HackTN_OracleOfPlenty.jpg)
+
+Huge shoutout to our team members [Gracie Wright](https://www.linkedin.com/in/graciemwright/), [Jisoo Sun](https://www.linkedin.com/in/jisoo-sun/), [Karver Repp](https://www.linkedin.com/in/karver-repp/), [Namuun Zolbadrakh](https://www.linkedin.com/in/namuun-zolbadrakh/), [Shivansh Shalabh](https://www.linkedin.com/in/shivansh-shalabh/), and [Summer Shang](https://www.linkedin.com/in/summer-shang-700798435/)! Not Wasted wouldn’t exist without the team.
+
 ---
 
 ## Pitch
